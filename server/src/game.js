@@ -14,6 +14,11 @@ const entityId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
 const rooms = new Map();
 const roomTimers = new Map();
 
+function normalizeName(value, fallback) {
+  const trimmed = String(value || "").trim();
+  return trimmed || fallback;
+}
+
 function persistRoom(room) {
   saveRoom(serializableRoom(room)).catch((error) => {
     console.error("Failed to persist room", error);
@@ -50,7 +55,7 @@ function serializableRoom(room) {
 function createBaseTeam(name, id = entityId()) {
   return {
     id,
-    name,
+    name: normalizeName(name, "Equipo"),
     playerIds: [],
     coins: 0,
     roundsWon: 0,
@@ -76,6 +81,7 @@ function computeRanking(room) {
     .map((player) => ({
       playerId: player.id,
       name: player.name,
+      avatarId: player.avatarId,
       teamId: player.teamId,
       teamName: room.teams.find((team) => team.id === player.teamId)?.name ?? "Sin equipo",
       coins: player.coins,
@@ -235,6 +241,50 @@ export function addPlayerToRoom(room, { playerName, avatarId, teamId, teamName }
   return player;
 }
 
+export function createTeam(room, teamName) {
+  if (!["lobby", "finished"].includes(room.status)) {
+    throw new Error("Solo puedes crear equipos antes de iniciar o cuando el juego ya termino.");
+  }
+
+  const finalName = normalizeName(teamName, `Equipo ${room.teams.length + 1}`);
+  const duplicated = room.teams.some(
+    (team) => team.name.toLowerCase() === finalName.toLowerCase()
+  );
+
+  if (duplicated) {
+    throw new Error("Ya existe un equipo con ese nombre.");
+  }
+
+  const team = createBaseTeam(finalName);
+  room.teams.push(team);
+  persistRoom(room);
+  return team;
+}
+
+export function renameTeam(room, teamId, teamName) {
+  if (!["lobby", "finished"].includes(room.status)) {
+    throw new Error("Solo puedes editar equipos antes de iniciar o cuando el juego ya termino.");
+  }
+
+  const team = room.teams.find((item) => item.id === teamId);
+  if (!team) {
+    throw new Error("Equipo no encontrado.");
+  }
+
+  const finalName = normalizeName(teamName, team.name);
+  const duplicated = room.teams.some(
+    (item) => item.id !== teamId && item.name.toLowerCase() === finalName.toLowerCase()
+  );
+
+  if (duplicated) {
+    throw new Error("Ya existe un equipo con ese nombre.");
+  }
+
+  team.name = finalName;
+  persistRoom(room);
+  return team;
+}
+
 export function reconnectPlayer(room, playerId) {
   const player = room.players.find((item) => item.id === playerId);
   if (!player) return null;
@@ -251,6 +301,48 @@ export function markPlayerOffline(playerId) {
       persistRoom(room);
     }
   });
+}
+
+export function leavePlayer(room, playerId) {
+  const player = room.players.find((item) => item.id === playerId);
+  if (!player) {
+    return { room, removed: false, deletedRoom: false };
+  }
+
+  if (room.status === "round") {
+    player.online = false;
+    persistRoom(room);
+    return { room, removed: false, deletedRoom: false, downgradedToOffline: true };
+  }
+
+  room.players = room.players.filter((item) => item.id !== playerId);
+  room.teams.forEach((team) => {
+    team.playerIds = team.playerIds.filter((id) => id !== playerId);
+  });
+  room.teams = room.teams.filter((team) => team.playerIds.length > 0);
+
+  if (room.players.length === 0) {
+    clearRoomTimer(room.code);
+    rooms.delete(room.code);
+    return { room: null, removed: true, deletedRoom: true };
+  }
+
+  if (room.adminId === playerId) {
+    const nextAdmin = room.players[0];
+    room.players.forEach((item) => {
+      item.isAdmin = item.id === nextAdmin.id;
+    });
+    room.adminId = nextAdmin.id;
+  }
+
+  if (!room.teams.find((team) => team.id === room.players[0]?.teamId) && room.teams.length === 0) {
+    clearRoomTimer(room.code);
+    rooms.delete(room.code);
+    return { room: null, removed: true, deletedRoom: true };
+  }
+
+  persistRoom(room);
+  return { room, removed: true, deletedRoom: false };
 }
 
 export function updateRoomConfig(room, payload) {

@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 
-const dataDir = path.resolve(process.cwd(), "server", "data", "pglite");
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const dataDir = path.resolve(currentDir, "..", "data", "pglite");
 fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new PGlite(dataDir);

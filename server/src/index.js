@@ -6,13 +6,16 @@ import { PORT } from "./config.js";
 import {
   addPlayerToRoom,
   canStart,
+  createTeam,
   createRoom,
   finishGame,
   getRoom,
+  leavePlayer,
   markPlayerOffline,
   publicRoomState,
   reconnectPlayer,
   registerVote,
+  renameTeam,
   resetGame,
   resolveRound,
   scheduleCurrentRound,
@@ -104,11 +107,62 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("room:leave", ({ roomCode, playerId }, callback) => {
+    try {
+      const room = getRoom(roomCode);
+      if (!room) {
+        socketPlayers.delete(socket.id);
+        callback?.({ ok: true, deletedRoom: true });
+        return;
+      }
+
+      const result = leavePlayer(room, playerId);
+      socket.leave(roomCode);
+      socketPlayers.delete(socket.id);
+      callback?.({
+        ok: true,
+        deletedRoom: result.deletedRoom,
+        removed: result.removed,
+        downgradedToOffline: result.downgradedToOffline || false
+      });
+
+      if (result.room) {
+        emitRoom(result.room);
+      }
+    } catch (error) {
+      fail(callback, error);
+    }
+  });
+
   socket.on("admin:updateConfig", ({ roomCode, playerId, config }, callback) => {
     try {
       const room = getRoom(roomCode);
       if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
       updateRoomConfig(room, config);
+      callback?.({ ok: true });
+      emitRoom(room);
+    } catch (error) {
+      fail(callback, error);
+    }
+  });
+
+  socket.on("admin:createTeam", ({ roomCode, playerId, teamName }, callback) => {
+    try {
+      const room = getRoom(roomCode);
+      if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
+      createTeam(room, teamName);
+      callback?.({ ok: true });
+      emitRoom(room);
+    } catch (error) {
+      fail(callback, error);
+    }
+  });
+
+  socket.on("admin:renameTeam", ({ roomCode, playerId, teamId, teamName }, callback) => {
+    try {
+      const room = getRoom(roomCode);
+      if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
+      renameTeam(room, teamId, teamName);
       callback?.({ ok: true });
       emitRoom(room);
     } catch (error) {
