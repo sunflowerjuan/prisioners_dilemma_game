@@ -1,5 +1,4 @@
 # Prisionero Game
-
 Aplicacion web multijugador inspirada en el Dilema del Prisionero para equipos empresariales. Incluye frontend en React + Tailwind, backend en Node.js + Express, tiempo real con Socket.IO y persistencia local con PGlite.
 
 ## Caracteristicas principales

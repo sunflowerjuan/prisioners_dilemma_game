@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import {
-  AVATARS,
-  DEFAULT_TEAMS,
-  TEAM_LIMIT,
-  THEMES,
-  THEME_STORAGE_KEY
-} from "./lib/constants";
+import { AVATARS, DEFAULT_TEAMS, TEAM_LIMIT, THEMES, THEME_STORAGE_KEY } from "./lib/constants";
 import { socket } from "./lib/socket";
 
 const STORAGE_KEY = "prisionero-game-session";
@@ -124,6 +118,7 @@ function ArcadeButton({ children, className, variant = "primary", ...props }) {
     danger: "bg-neonPink text-white",
     lime: "bg-neonLime text-ink",
     dark: "bg-[#0f1530] text-neonBlue",
+    ghost: "bg-[#0f1530] text-neonBlue",
     gold: "bg-arcadeGold text-ink"
   };
 
@@ -168,17 +163,29 @@ function MiniStat({ label, value, tone = "blue" }) {
 
 function ThemeSwitcher({ theme, setTheme }) {
   return (
-    <div className="flex gap-2">
-      {THEMES.map((item) => (
-        <ArcadeButton
-          key={item.id}
-          variant={theme === item.id ? "lime" : "dark"}
-          className="px-3 py-2"
-          onClick={() => setTheme(item.id)}
-        >
-          {item.name}
-        </ArcadeButton>
-      ))}
+    <div className="flex items-center gap-3">
+      <div>
+        <div className="font-pixel text-[9px] theme-muted">Tema por defecto</div>
+        <div className="mt-2 font-pixel text-[10px] text-neonLime">
+          {theme === "light" ? "Light Neon" : "Black Neon"}
+        </div>
+      </div>
+      <button
+        type="button"
+        aria-label="Cambiar tema"
+        aria-pressed={theme === "dark"}
+        className={clsx("theme-toggle", theme === "dark" && "theme-toggle-dark")}
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      >
+        <span className="theme-toggle-track">
+          {THEMES.map((item) => (
+            <span key={item.id} className="theme-toggle-label">
+              {item.id === "light" ? "L" : "D"}
+            </span>
+          ))}
+        </span>
+        <span className={clsx("theme-toggle-thumb", theme === "dark" && "theme-toggle-thumb-dark")} />
+      </button>
     </div>
   );
 }
@@ -197,50 +204,49 @@ function JoinScreen({
   setTheme
 }) {
   const teams = room?.teams?.length ? room.teams : DEFAULT_TEAMS;
+  const showJoinTeams = mode === "join";
 
   return (
-    <div className="mx-auto grid min-h-screen max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-4 lg:px-6">
+      <div className="grid w-full gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
       <section className="flex flex-col justify-center">
-        <div className="mb-6 inline-flex w-fit border border-neonPink/60 bg-neonPink/10 px-3 py-2 font-pixel text-[10px] text-neonPink">
-          Multiplayer Corporate Prisoner Arcade
-        </div>
-        <h1 className="max-w-3xl font-pixel text-3xl leading-tight md:text-5xl">
+        <ThemeSwitcher theme={theme} setTheme={setTheme} />
+        <h1 className="mt-4 max-w-3xl font-pixel text-4xl leading-[1.05] md:text-6xl xl:text-7xl">
           PRISIONERO
           <span className="block text-neonBlue">GAME</span>
         </h1>
-        <p className="mt-5 max-w-2xl text-lg theme-muted">
+        <div className="mt-4 inline-flex w-fit border border-neonPink/60 bg-neonPink/10 px-3 py-2 font-pixel text-[10px] text-neonPink">
+          Multiplayer Corporate Prisoner Arcade
+        </div>
+        <p className="mt-4 max-w-2xl text-base theme-muted md:text-lg">
           Equipos empresariales votan en tiempo real, compiten 1 vs 1 y sobreviven ronda a ronda con estrategia, traicion y coins.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <MiniStat label="Tiempo real" value="Socket.IO" tone="blue" />
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <MiniStat label="Jugadores por equipo" value={`Hasta ${TEAM_LIMIT}`} tone="pink" />
-          <MiniStat label="Tema por defecto" value="Light Neon" tone="lime" />
+          <MiniStat label="Equipo inicial" value="Star Platinum" tone="lime" />
         </div>
       </section>
 
-      <Panel className="self-center p-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
+      <Panel className="self-center p-4 md:p-5">
+        <div className="flex gap-3">
             <ArcadeButton
-              variant={mode === "create" ? "lime" : "dark"}
+              variant={mode === "create" ? "lime" : "ghost"}
               className="flex-1"
               onClick={() => setMode("create")}
             >
               Crear sala
             </ArcadeButton>
             <ArcadeButton
-              variant={mode === "join" ? "lime" : "dark"}
+              variant={mode === "join" ? "lime" : "ghost"}
               className="flex-1"
               onClick={() => setMode("join")}
             >
               Unirse
             </ArcadeButton>
-          </div>
-          <ThemeSwitcher theme={theme} setTheme={setTheme} />
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-4 space-y-3">
           <label className="block">
             <span className="mb-2 block font-pixel text-[10px] theme-muted">Nombre</span>
             <input
@@ -251,6 +257,12 @@ function JoinScreen({
               placeholder="Tu alias corporativo"
             />
           </label>
+
+          {mode === "create" && (
+            <div className="theme-soft border border-neonLime/30 p-3 text-sm theme-muted">
+              Al crear sala se genera tu equipo base automaticamente con el nombre <span className="font-pixel text-[10px] text-neonLime">Star Platinum</span>.
+            </div>
+          )}
 
           {mode === "join" && (
             <label className="block">
@@ -265,44 +277,48 @@ function JoinScreen({
             </label>
           )}
 
-          <label className="block">
-            <span className="mb-2 block font-pixel text-[10px] theme-muted">Nombre del equipo</span>
-            <input
-              className="arcade-input"
-              value={form.teamName}
-              maxLength={24}
-              onChange={(event) => setForm((current) => ({ ...current, teamName: event.target.value }))}
-              placeholder={mode === "create" ? "Alpha Corp" : "Crear nuevo o elegir uno existente"}
-            />
-          </label>
+          {mode === "join" && (
+            <label className="block">
+              <span className="mb-2 block font-pixel text-[10px] theme-muted">Nombre del equipo</span>
+              <input
+                className="arcade-input"
+                value={form.teamName}
+                maxLength={24}
+                onChange={(event) => setForm((current) => ({ ...current, teamName: event.target.value }))}
+                placeholder="Crear nuevo o elegir uno existente"
+              />
+            </label>
+          )}
 
-          <div>
-            <div className="mb-2 font-pixel text-[10px] theme-muted">Equipos en la sala</div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {teams.map((team) => (
-                <button
-                  type="button"
-                  key={team.id}
-                  className={clsx(
-                    "theme-soft rounded-none border px-3 py-3 text-left font-body",
-                    form.teamId === team.id
-                      ? "border-neonBlue bg-neonBlue/10 text-neonBlue"
-                      : "border-white/10"
-                  )}
-                  onClick={() => setForm((current) => ({ ...current, teamId: team.id, teamName: team.name }))}
-                >
-                  <div className="font-pixel text-[10px]">{team.name}</div>
-                  {"playerIds" in team && (
-                    <div className="mt-2 text-sm theme-muted">{team.playerIds.length} jugadores</div>
-                  )}
-                </button>
-              ))}
+          {showJoinTeams && (
+            <div>
+              <div className="mb-2 font-pixel text-[10px] theme-muted">Equipos en la sala</div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {teams.map((team) => (
+                  <button
+                    type="button"
+                    key={team.id}
+                    className={clsx(
+                      "theme-soft rounded-none border px-3 py-3 text-left font-body",
+                      form.teamId === team.id
+                        ? "border-neonBlue bg-neonBlue/10 text-neonBlue"
+                        : "border-white/10"
+                    )}
+                    onClick={() => setForm((current) => ({ ...current, teamId: team.id, teamName: team.name }))}
+                  >
+                    <div className="font-pixel text-[10px]">{team.name}</div>
+                    {"playerIds" in team && (
+                      <div className="mt-2 text-sm theme-muted">{team.playerIds.length} jugadores</div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <div className="mb-3 font-pixel text-[10px] theme-muted">Avatar pixel</div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 md:grid-cols-3">
               {AVATARS.map((avatar) => (
                 <button
                   type="button"
@@ -322,7 +338,7 @@ function JoinScreen({
             </div>
           </div>
 
-          {room && (
+          {showJoinTeams && room && (
             <div className="theme-soft border border-neonLime/30 p-3 text-sm theme-muted">
               Esta sala tiene {room.players.length} jugador(es) y {room.teams.length} equipo(s).
             </div>
@@ -340,6 +356,7 @@ function JoinScreen({
           </ArcadeButton>
         </div>
       </Panel>
+      </div>
     </div>
   );
 }
@@ -568,7 +585,7 @@ export default function App() {
     playerName: "",
     roomCode: "",
     teamId: "",
-    teamName: "",
+    teamName: "Star Platinum",
     avatarId: AVATARS[0].id
   });
   const [loading, setLoading] = useState(false);
@@ -611,6 +628,12 @@ export default function App() {
     if (!room?.teams) return;
     setTeamDrafts(Object.fromEntries(room.teams.map((team) => [team.id, team.name])));
   }, [room?.teams]);
+
+  useEffect(() => {
+    if (mode === "create") {
+      setForm((current) => ({ ...current, teamId: "", teamName: "Star Platinum" }));
+    }
+  }, [mode]);
 
   useEffect(() => {
     if (mode !== "join" || form.roomCode.trim().length !== 6) return;
@@ -722,7 +745,7 @@ export default function App() {
       {
         playerName: form.playerName.trim(),
         avatarId: form.avatarId,
-        teamName: form.teamName.trim() || "Alpha Corp"
+        teamName: "Star Platinum"
       },
       (response) => {
         setLoading(false);
