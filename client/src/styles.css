@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Press+Start+2P&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: "Chakra Petch", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(84, 247, 255, 0.16), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(255, 79, 216, 0.14), transparent 30%),
+    linear-gradient(180deg, #050816 0%, #090d1f 50%, #050816 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(84, 247, 255, 0.2), transparent 30%),
+    radial-gradient(circle at bottom, rgba(255, 79, 216, 0.12), transparent 35%),
+    #050816;
+  background-size: 24px 24px, 24px 24px, auto, auto, auto;
+  color: white;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.arcade-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(5, 8, 22, 0.8);
+  color: white;
+  padding: 0.95rem 1rem;
+  border-radius: 0;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 1rem;
+}
+
+.arcade-input:focus {
+  outline: 2px solid rgba(84, 247, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.vote-card {
+  background: linear-gradient(180deg, rgba(11, 16, 37, 0.9), rgba(5, 8, 22, 0.95));
+  border-width: 1px;
+  padding: 1.25rem;
+  text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+.vote-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(84, 247, 255, 0.12);
+}
+
+.vote-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.crt-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.24;
+}
+
+@media (max-width: 768px) {
+  .arcade-input {
+    font-size: 16px;
+  }
+}
