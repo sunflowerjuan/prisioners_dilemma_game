@@ -1,12 +1,61 @@
 export const TEAM_LIMIT = 8;
 
+export const THEME_STORAGE_KEY = "prisionero-game-theme";
+
+export const THEMES = [
+  { id: "light", name: "Light Neon" },
+  { id: "dark", name: "Black Neon" }
+];
+
 export const AVATARS = [
-  { id: "cyber-fox", name: "Cyber Fox", skin: "#f9c26b", accent: "#ff4fd8", visor: "#54f7ff" },
-  { id: "neon-bot", name: "Neon Bot", skin: "#9dc4ff", accent: "#c5ff5e", visor: "#ffd447" },
-  { id: "pixel-punk", name: "Pixel Punk", skin: "#ffb3c7", accent: "#7a5cff", visor: "#54f7ff" },
-  { id: "byte-ghost", name: "Byte Ghost", skin: "#d4d6ff", accent: "#54f7ff", visor: "#ff4fd8" },
-  { id: "arcade-ninja", name: "Arcade Ninja", skin: "#bfe686", accent: "#ff7a59", visor: "#ffd447" },
-  { id: "glitch-rider", name: "Glitch Rider", skin: "#f3d4ff", accent: "#54f7ff", visor: "#c5ff5e" }
+  {
+    id: "duck-chief",
+    name: "Duck Chief",
+    skin: "#ffd0ad",
+    accent: "#55d7ff",
+    eye: "#18202b",
+    hat: "duck"
+  },
+  {
+    id: "jojo-segundo",
+    name: "Jojo Segundo",
+    skin: "#f5c4a5",
+    accent: "#ff4fd8",
+    eye: "#10131a",
+    hat: "jojo"
+  },
+  {
+    id: "neon-bot",
+    name: "Neon Bot",
+    skin: "#9dc4ff",
+    accent: "#c5ff5e",
+    eye: "#ffd447",
+    hat: "antenna"
+  },
+  {
+    id: "pixel-punk",
+    name: "Pixel Punk",
+    skin: "#ffb3c7",
+    accent: "#7a5cff",
+    eye: "#54f7ff",
+    hat: "mohawk"
+  },
+  {
+    id: "byte-ghost",
+    name: "Byte Ghost",
+    skin: "#d4d6ff",
+    accent: "#54f7ff",
+    eye: "#ff4fd8",
+    hat: "halo"
+  },
+  {
+    id: "arcade-ninja",
+    name: "Arcade Ninja",
+    skin: "#bfe686",
+    accent: "#ff7a59",
+    eye: "#111827",
+    hat: "bandana"
+  }
 ];
 
 export const DEFAULT_TEAMS = [

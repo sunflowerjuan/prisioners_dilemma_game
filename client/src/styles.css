@@ -5,12 +5,43 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: "Chakra Petch", sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(84, 247, 255, 0.16), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(255, 79, 216, 0.14), transparent 30%),
-    linear-gradient(180deg, #050816 0%, #090d1f 50%, #050816 100%);
+  --page-base:
+    linear-gradient(rgba(26, 35, 64, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 35, 64, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(84, 247, 255, 0.2), transparent 32%),
+    radial-gradient(circle at bottom, rgba(255, 79, 216, 0.12), transparent 38%),
+    #f5fbff;
+  --page-size: 24px 24px, 24px 24px, auto, auto, auto;
+  --text-main: #111827;
+  --text-muted: rgba(17, 24, 39, 0.72);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-soft: rgba(255, 255, 255, 0.6);
+  --surface-border: rgba(84, 247, 255, 0.34);
+  --input-bg: rgba(255, 255, 255, 0.88);
+  --panel-shadow: 0 0 0 2px rgba(84, 247, 255, 0.2), 0 12px 30px rgba(17, 24, 39, 0.12);
+  --hover-shadow: 0 10px 24px rgba(84, 247, 255, 0.18);
+  --crt-opacity: 0.1;
+}
+
+body[data-theme="dark"] {
+  color-scheme: dark;
+  --page-base:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(84, 247, 255, 0.2), transparent 30%),
+    radial-gradient(circle at bottom, rgba(255, 79, 216, 0.12), transparent 35%),
+    #050816;
+  --text-main: #f8fbff;
+  --text-muted: rgba(248, 251, 255, 0.72);
+  --surface: rgba(11, 16, 37, 0.9);
+  --surface-soft: rgba(5, 8, 22, 0.68);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(5, 8, 22, 0.8);
+  --panel-shadow: 0 0 0 2px rgba(197, 255, 94, 0.25), inset 0 0 0 2px rgba(5, 8, 22, 0.8);
+  --hover-shadow: 0 10px 20px rgba(84, 247, 255, 0.12);
+  --crt-opacity: 0.24;
 }
 
 * {
@@ -21,25 +52,43 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at top, rgba(84, 247, 255, 0.2), transparent 30%),
-    radial-gradient(circle at bottom, rgba(255, 79, 216, 0.12), transparent 35%),
-    #050816;
-  background-size: 24px 24px, 24px 24px, auto, auto, auto;
-  color: white;
+  background: var(--page-base);
+  background-size: var(--page-size);
+  color: var(--text-main);
 }
 
 #root {
   min-height: 100vh;
 }
 
+.app-shell {
+  min-height: 100vh;
+  color: var(--text-main);
+}
+
+.theme-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.theme-muted {
+  color: var(--text-muted);
+}
+
+.theme-soft {
+  background: var(--surface-soft);
+}
+
 .arcade-input {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(5, 8, 22, 0.8);
-  color: white;
+  border: 1px solid var(--surface-border);
+  background: var(--input-bg);
+  color: var(--text-main);
   padding: 0.95rem 1rem;
   border-radius: 0;
   font-family: "Chakra Petch", sans-serif;
@@ -59,9 +108,13 @@ body {
   transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
 }
 
+body[data-theme="light"] .vote-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(232, 246, 255, 0.95));
+}
+
 .vote-card:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(84, 247, 255, 0.12);
+  box-shadow: var(--hover-shadow);
 }
 
 .vote-card:disabled {
@@ -82,7 +135,15 @@ body {
       transparent 4px
     );
   mix-blend-mode: screen;
-  opacity: 0.24;
+  opacity: var(--crt-opacity);
+}
+
+.avatar-swatch {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="light"] .avatar-swatch {
+  background: rgba(255, 255, 255, 0.78);
 }
 
 @media (max-width: 768px) {
