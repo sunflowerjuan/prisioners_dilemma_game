@@ -542,7 +542,8 @@ function TeamAdminPanel({
   newTeamName,
   setNewTeamName,
   onCreateTeam,
-  onRenameTeam
+  onRenameTeam,
+  onDeleteTeam
 }) {
   const canEditTeams = room.status === "lobby" || room.status === "finished";
 
@@ -572,8 +573,18 @@ function TeamAdminPanel({
               >
                 Guardar
               </ArcadeButton>
+              <ArcadeButton
+                variant="danger"
+                disabled={!canEditTeams || team.playerIds.length > 0 || room.teams.length <= 1}
+                onClick={() => onDeleteTeam(team.id)}
+              >
+                Eliminar
+              </ArcadeButton>
             </div>
-            <div className="mt-2 text-sm theme-muted">{team.playerIds.length} / {TEAM_LIMIT} jugadores</div>
+            <div className="mt-2 text-sm theme-muted">
+              {team.playerIds.length} / {TEAM_LIMIT} jugadores
+              {team.playerIds.length > 0 ? " · Debe quedar vacio para eliminarse." : ""}
+            </div>
           </div>
         ))}
       </div>
@@ -907,6 +918,10 @@ export default function App() {
     emitAdmin("admin:renameTeam", { teamId, teamName });
   }
 
+  function deleteTeamAction(teamId) {
+    emitAdmin("admin:deleteTeam", { teamId });
+  }
+
   if (!room || !livePlayer) {
     return (
       <div className="app-shell">
@@ -932,6 +947,7 @@ export default function App() {
 
   const currentPlayerIndex = room.ranking.players.findIndex((entry) => entry.playerId === livePlayer.id);
   const currentPlayerRanking = currentPlayerIndex >= 0 ? currentPlayerIndex + 1 : "-";
+  const canFinishGame = room.status === "round" || room.status === "results";
 
   return (
     <div className="app-shell px-3 py-3 sm:px-4 md:px-6">
@@ -1076,7 +1092,7 @@ export default function App() {
                           Siguiente ronda
                         </ArcadeButton>
                       )}
-                      <ArcadeButton variant="danger" onClick={() => emitAdmin("admin:finishGame")}>
+                      <ArcadeButton variant="danger" disabled={!canFinishGame} onClick={() => emitAdmin("admin:finishGame")}>
                         Finalizar juego
                       </ArcadeButton>
                       <ArcadeButton variant="dark" onClick={() => emitAdmin("admin:resetGame")}>
@@ -1095,6 +1111,7 @@ export default function App() {
                       setNewTeamName={setNewTeamName}
                       onCreateTeam={createTeamAction}
                       onRenameTeam={renameTeamAction}
+                      onDeleteTeam={deleteTeamAction}
                     />
                   </div>
                 </div>

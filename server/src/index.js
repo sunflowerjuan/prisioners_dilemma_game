@@ -8,6 +8,7 @@ import {
   canStart,
   createTeam,
   createRoom,
+  deleteTeamFromRoom,
   deleteRoom,
   finishGame,
   getRoom,
@@ -164,6 +165,18 @@ io.on("connection", (socket) => {
       const room = getRoom(roomCode);
       if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
       renameTeam(room, teamId, teamName);
+      callback?.({ ok: true });
+      emitRoom(room);
+    } catch (error) {
+      fail(callback, error);
+    }
+  });
+
+  socket.on("admin:deleteTeam", ({ roomCode, playerId, teamId }, callback) => {
+    try {
+      const room = getRoom(roomCode);
+      if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
+      deleteTeamFromRoom(room, teamId);
       callback?.({ ok: true });
       emitRoom(room);
     } catch (error) {
