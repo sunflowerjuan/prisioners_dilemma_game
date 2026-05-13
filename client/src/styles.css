@@ -201,6 +201,22 @@ body[data-theme="light"] .avatar-swatch {
   scroll-margin-top: 16px;
 }
 
+.sidebar-scroll {
+  overflow-y: auto;
+}
+
+.modal-shell {
+  border: 1px solid rgba(84, 247, 255, 0.24);
+  background: rgba(2, 6, 23, 0.16);
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.4);
+}
+
+.modal-ranking-scroll {
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     min-height: auto;
@@ -231,11 +247,21 @@ body[data-theme="light"] .avatar-swatch {
   .decision-stage .vote-card {
     padding: 1rem;
   }
+
+  .modal-ranking-scroll {
+    max-height: none;
+    padding-right: 0;
+  }
 }
 
 @media (min-width: 769px) {
   .mobile-header-layout {
     grid-template-columns: minmax(0, 1fr) minmax(260px, 360px) auto;
     align-items: center;
+  }
+
+  .sidebar-scroll {
+    max-height: min(38vh, 520px);
+    padding-right: 0.35rem;
   }
 }
