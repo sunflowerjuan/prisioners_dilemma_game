@@ -112,8 +112,9 @@ Socket.IO con conexiones persistentes no es una buena combinacion para funciones
 
 El repo ahora incluye `render.yaml`, asi que puedes crear el servicio web directamente desde GitHub usando estos valores:
 
+- `Root Directory`: `server`
 - `Build Command`: `npm install`
-- `Start Command`: `npm run start --workspace server`
+- `Start Command`: `npm run start`
 - `Health Check Path`: `/api/health`
 
 Deploy directo:
