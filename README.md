@@ -101,12 +101,24 @@ Antes de desplegar, configura en Vercel:
 
 - `Root Directory`: repositorio raiz
 - `Build Command`: `npm run build --workspace client`
-- `Output Directory`: `dist`
+- `Output Directory`: `client/dist`
 - `VITE_SOCKET_URL`: URL publica del backend Socket.IO
 
 ### Backend en tiempo real
 
 Socket.IO con conexiones persistentes no es una buena combinacion para funciones serverless tradicionales de Vercel. Para mantener tiempo real estable, recomiendo desplegar el backend Express en Railway, Render o un VPS, y dejar Vercel para el frontend.
+
+#### Opcion rapida con Render
+
+El repo ahora incluye `render.yaml`, asi que puedes crear el servicio web directamente desde GitHub usando estos valores:
+
+- `Build Command`: `npm install`
+- `Start Command`: `npm run start --workspace server`
+- `Health Check Path`: `/api/health`
+
+Deploy directo:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sunflowerjuan/prisioners_dilemma_game)
 
 Si quieres, el siguiente paso puede ser:
 

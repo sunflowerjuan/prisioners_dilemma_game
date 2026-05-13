@@ -8,6 +8,7 @@ import {
   canStart,
   createTeam,
   createRoom,
+  deleteRoom,
   finishGame,
   getRoom,
   leavePlayer,
@@ -229,6 +230,21 @@ io.on("connection", (socket) => {
       resetGame(room);
       callback?.({ ok: true });
       emitRoom(room);
+    } catch (error) {
+      fail(callback, error);
+    }
+  });
+
+  socket.on("admin:deleteRoom", ({ roomCode, playerId }, callback) => {
+    try {
+      const room = getRoom(roomCode);
+      if (!room || room.adminId !== playerId) throw new Error("No autorizado.");
+      io.to(room.code).emit("room:closed", {
+        roomCode: room.code,
+        message: "La sala fue eliminada por el administrador."
+      });
+      deleteRoom(room.code);
+      callback?.({ ok: true, deletedRoom: true });
     } catch (error) {
       fail(callback, error);
     }

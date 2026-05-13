@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: prisionero-game-server
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm run start --workspace server
+    healthCheckPath: /api/health
+    autoDeploy: true

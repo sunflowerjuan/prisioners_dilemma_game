@@ -213,11 +213,10 @@ export function addPlayerToRoom(room, { playerName, avatarId, teamId, teamName }
     room.teams.find((team) => team.id === teamId) ||
     (teamName ? room.teams.find((team) => team.name.toLowerCase() === teamName.toLowerCase()) : null);
 
-  let team = selectedTeam;
-  if (!team) {
-    team = createBaseTeam(teamName || `Equipo ${room.teams.length + 1}`);
-    room.teams.push(team);
+  if (!selectedTeam) {
+    throw new Error("Selecciona un equipo valido para unirte.");
   }
+  const team = selectedTeam;
 
   if (team.playerIds.length >= room.config.maxPlayersPerTeam) {
     throw new Error("Ese equipo ya está lleno.");
@@ -524,6 +523,12 @@ export function resetGame(room) {
     player.history = [];
   });
   persistRoom(room);
+}
+
+export function deleteRoom(roomCode) {
+  const normalizedCode = roomCode.toUpperCase();
+  clearRoomTimer(normalizedCode);
+  return rooms.delete(normalizedCode);
 }
 
 export function publicRoomState(room) {

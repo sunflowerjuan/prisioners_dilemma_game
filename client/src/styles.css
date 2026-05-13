@@ -193,6 +193,14 @@ body[data-theme="light"] .avatar-swatch {
   background: rgba(255, 255, 255, 0.78);
 }
 
+.mobile-header-layout {
+  display: grid;
+}
+
+.decision-stage {
+  scroll-margin-top: 16px;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     min-height: auto;
@@ -214,5 +222,20 @@ body[data-theme="light"] .avatar-swatch {
 
   .theme-toggle-thumb-dark {
     transform: translateX(41px);
+  }
+
+  .mobile-header-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .decision-stage .vote-card {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-header-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px) auto;
+    align-items: center;
   }
 }
