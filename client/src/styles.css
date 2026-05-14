@@ -201,6 +201,39 @@ body[data-theme="light"] .avatar-swatch {
   scroll-margin-top: 16px;
 }
 
+.sidebar-scroll {
+  overflow-y: auto;
+}
+
+.modal-shell {
+  border: 1px solid rgba(84, 247, 255, 0.24);
+  background: rgba(2, 6, 23, 0.16);
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.4);
+}
+
+.modal-ranking-scroll {
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.results-pair-header > * {
+  min-width: 0;
+}
+
+.results-pair-grid > * {
+  min-width: 0;
+}
+
+.lobby-notice,
+.round-chip,
+.decision-copy,
+.decision-actions,
+.decision-meta,
+.admin-panel-body {
+  transition: all 150ms ease;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     min-height: auto;
@@ -228,8 +261,116 @@ body[data-theme="light"] .avatar-swatch {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .mobile-header-layout .avatar-swatch {
+    height: 3.5rem;
+    width: 3.5rem;
+  }
+
   .decision-stage .vote-card {
-    padding: 1rem;
+    padding: 0.875rem;
+  }
+
+  .admin-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-action-btn {
+    padding: 0.75rem 0.65rem;
+    font-size: 9px;
+  }
+
+  .admin-config-grid .arcade-input {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .results-board {
+    gap: 0.75rem;
+  }
+
+  .results-board .theme-soft {
+    padding: 0.75rem;
+  }
+
+  .results-pair-header {
+    align-items: flex-start;
+  }
+
+  .modal-ranking-scroll {
+    max-height: none;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-shell {
+    font-size: 15px;
+  }
+
+  .mobile-header-layout {
+    gap: 0.75rem;
+  }
+
+  .lobby-notice {
+    padding-top: 0.625rem !important;
+    padding-bottom: 0.625rem !important;
+  }
+
+  .decision-copy {
+    margin-top: 0.375rem !important;
+    font-size: 0.8rem;
+    line-height: 1.25rem;
+  }
+
+  .round-chip {
+    padding: 0.45rem 0.65rem !important;
+  }
+
+  .decision-actions {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .decision-stage .vote-card {
+    padding: 0.75rem;
+  }
+
+  .decision-stage .vote-card .font-pixel.text-sm {
+    font-size: 0.72rem;
+  }
+
+  .decision-stage .vote-card .text-sm {
+    font-size: 0.8rem;
+    line-height: 1.15rem;
+  }
+
+  .decision-meta {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem 0.75rem !important;
+    font-size: 0.8rem;
+  }
+
+  .admin-panel-body {
+    margin-top: 0.875rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  .admin-actions-grid {
+    gap: 0.45rem !important;
+  }
+
+  .admin-action-btn {
+    min-height: 42px;
+    padding: 0.65rem 0.45rem;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+
+  .admin-config-grid {
+    gap: 0.6rem !important;
+  }
+
+  .admin-config-grid .arcade-input {
+    padding: 0.65rem 0.75rem;
   }
 }
 
@@ -237,5 +378,26 @@ body[data-theme="light"] .avatar-swatch {
   .mobile-header-layout {
     grid-template-columns: minmax(0, 1fr) minmax(260px, 360px) auto;
     align-items: center;
+  }
+
+  .desktop-main-grid {
+    align-items: stretch;
+  }
+
+  .decision-stage.desktop-fill-stage {
+    min-height: 100%;
+  }
+
+  .sidebar-scroll {
+    max-height: min(46vh, 620px);
+    padding-right: 0.35rem;
+  }
+
+  .results-board {
+    align-items: stretch;
+  }
+
+  .results-pair-grid {
+    align-items: stretch;
   }
 }

@@ -411,7 +411,7 @@ function TeamCard({ team, room, selectedTeamId }) {
   );
 }
 
-function ResultsBoard({ room, rankingOpen, setRankingOpen }) {
+function ResultsBoard({ room }) {
   const lastResult = room.currentRound?.results || room.history[0];
 
   if (!lastResult) {
@@ -423,114 +423,127 @@ function ResultsBoard({ room, rankingOpen, setRankingOpen }) {
   }
 
   return (
-    <div className="space-y-4">
-      <Panel>
-        <div className="font-pixel text-xs text-neonPink">Resultado de la ronda {room.roundNumber}</div>
-        <div className="mt-4 space-y-3">
-          {lastResult.pairResults.map((pair) => (
-            <div key={`${pair.teamAId}-${pair.teamBId || "bye"}`} className="theme-soft border border-white/10 p-3">
-              <div className="font-pixel text-[10px]">
+    <Panel className="overflow-visible">
+      <div className="font-pixel text-xs text-neonPink">Resultado de la ronda {room.roundNumber}</div>
+      <div className="results-board mt-4 space-y-3">
+        {lastResult.pairResults.map((pair) => (
+          <div key={`${pair.teamAId}-${pair.teamBId || "bye"}`} className="theme-soft border border-white/10 p-3">
+            <div className="results-pair-header flex flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0 font-pixel text-[10px] break-words">
                 {pair.teamAName} vs {pair.teamBName}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                <div className="rounded-none border border-neonBlue/20 bg-neonBlue/5 p-3">
-                  <div className="text-xs theme-muted">Decision {pair.teamAName}</div>
-                  <div className="mt-2 font-pixel text-[10px] text-neonBlue">{decisionLabels[pair.decisionA] || "Descansa"}</div>
-                  <div className="mt-2 text-sm text-arcadeGold">
-                    {pair.deltaA >= 0 ? "+" : ""}
-                    {pair.deltaA} coins
-                  </div>
+              <div className="font-pixel text-[8px] text-neonLime">
+                {pair.winner ? `Gana ${pair.winner === pair.teamAId ? pair.teamAName : pair.teamBName}` : "Empate"}
+              </div>
+            </div>
+            <div className="results-pair-grid mt-3 grid gap-2 md:grid-cols-2">
+              <div className="min-w-0 rounded-none border border-neonBlue/20 bg-neonBlue/5 p-3">
+                <div className="text-xs theme-muted">{pair.teamAName}</div>
+                <div className="mt-2 font-pixel text-[10px] text-neonBlue">{decisionLabels[pair.decisionA] || "Descansa"}</div>
+                <div className="mt-2 text-sm text-arcadeGold">
+                  {pair.deltaA >= 0 ? "+" : ""}
+                  {pair.deltaA} coins
                 </div>
-                <div className="rounded-none border border-neonPink/20 bg-neonPink/5 p-3">
-                  <div className="text-xs theme-muted">Decision {pair.teamBName}</div>
-                  <div className="mt-2 font-pixel text-[10px] text-neonPink">{decisionLabels[pair.decisionB] || "Descansa"}</div>
-                  <div className="mt-2 text-sm text-arcadeGold">
-                    {pair.deltaB >= 0 ? "+" : ""}
-                    {pair.deltaB} coins
-                  </div>
+              </div>
+              <div className="min-w-0 rounded-none border border-neonPink/20 bg-neonPink/5 p-3">
+                <div className="text-xs theme-muted">{pair.teamBName}</div>
+                <div className="mt-2 font-pixel text-[10px] text-neonPink">{decisionLabels[pair.decisionB] || "Descansa"}</div>
+                <div className="mt-2 text-sm text-arcadeGold">
+                  {pair.deltaB >= 0 ? "+" : ""}
+                  {pair.deltaB} coins
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </Panel>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
 
-      <SectionToggle
-        title="Ranking global"
-        subtitle="Se movio a un bloque secundario para dejar el foco en la decision y el resultado."
-        open={rankingOpen}
-        onToggle={() => setRankingOpen((current) => !current)}
-        tone="blue"
-      >
-        <div className="space-y-2">
-          {room.ranking.teams.map((team, index) => (
-            <div key={team.teamId} className="theme-soft flex items-center justify-between border border-white/10 px-3 py-2">
-              <div>
-                <div className="font-pixel text-[9px]">#{index + 1} {team.teamName}</div>
-                <div className="mt-1 text-xs theme-muted">{team.roundsWon} rondas ganadas</div>
-              </div>
-              <div className="font-pixel text-[10px] text-arcadeGold">{team.coins}c</div>
-            </div>
-          ))}
+function RankingBoardContent({ teams }) {
+  return (
+    <div className="space-y-2">
+      {teams.map((team, index) => (
+        <div key={team.teamId} className="theme-soft flex items-center justify-between border border-white/10 px-3 py-2">
+          <div>
+            <div className="font-pixel text-[9px]">#{index + 1} {team.teamName}</div>
+            <div className="mt-1 text-xs theme-muted">{team.roundsWon} rondas ganadas</div>
+          </div>
+          <div className="font-pixel text-[10px] text-arcadeGold">{team.coins}c</div>
         </div>
-      </SectionToggle>
+      ))}
     </div>
   );
 }
 
-function GameFinished({ room, onLeave, rankingOpen, setRankingOpen }) {
+function GameFinishedModal({ room, onBackToRoom, onLeave }) {
   const summary = room.gameSummary;
   if (!summary) return null;
 
   return (
-    <div className="space-y-4">
-      <Panel>
-        <div className="font-pixel text-sm text-neonLime">Juego finalizado</div>
-        <div className="mt-4 text-3xl font-pixel">{summary.winner?.teamName || "Sin ganador"}</div>
-        <div className="mt-2 theme-muted">Puedes salir al menu y entrar a otra sala o crear una nueva.</div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <MiniStat label="Rondas" value={summary.totalRounds} tone="blue" />
-          <MiniStat label="% Cooperacion" value={`${summary.cooperateRate}%`} tone="lime" />
-          <MiniStat label="% Traicion" value={`${summary.betrayRate}%`} tone="pink" />
-        </div>
-
-        <div className="mt-6">
-          <ArcadeButton variant="gold" onClick={onLeave}>Volver al menu</ArcadeButton>
-        </div>
-      </Panel>
-
-      <Panel>
-        <div className="font-pixel text-xs text-neonPink">MVP</div>
-        <div className="mt-4 flex items-center gap-4">
-          <PixelAvatar avatarId={summary.mvp?.avatarId || "jojo-segundo"} size="lg" />
-          <div>
-            <div className="font-pixel text-sm">{summary.mvp?.name || "N/A"}</div>
-            <div className="mt-2 theme-muted">{summary.mvp?.teamName || "Sin equipo"}</div>
-            <div className="mt-2 font-pixel text-[10px] text-arcadeGold">{summary.mvp?.coins || 0} coins</div>
-          </div>
-        </div>
-      </Panel>
-
-      <SectionToggle
-        title="Ranking final"
-        subtitle="Resumen completo por equipos."
-        open={rankingOpen}
-        onToggle={() => setRankingOpen((current) => !current)}
-        tone="gold"
-      >
-        <div className="space-y-2">
-          {summary.ranking.teams.map((team, index) => (
-            <div key={team.teamId} className="theme-soft flex items-center justify-between border border-white/10 px-3 py-2">
-              <div>
-                <div className="font-pixel text-[9px]">#{index + 1} {team.teamName}</div>
-                <div className="mt-1 text-xs theme-muted">{team.roundsWon} rondas ganadas</div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020617]/75 px-3 py-6 backdrop-blur-sm">
+      <div className="modal-shell max-h-[92vh] w-full max-w-5xl overflow-y-auto">
+        <Panel className="p-5 md:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="font-pixel text-sm text-neonLime">Juego finalizado</div>
+              <div className="mt-4 text-3xl font-pixel md:text-5xl">{summary.winner?.teamName || "Sin ganador"}</div>
+              <div className="mt-2 max-w-2xl theme-muted">
+                La partida ya cerro. Puedes volver a la sala para revisar el tablero o salir al menu.
               </div>
-              <div className="font-pixel text-[10px] text-arcadeGold">{team.coins}c</div>
             </div>
-          ))}
-        </div>
-      </SectionToggle>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <MiniStat label="Rondas" value={summary.totalRounds} tone="blue" />
+            <MiniStat label="% Cooperacion" value={`${summary.cooperateRate}%`} tone="lime" />
+            <MiniStat label="% Traicion" value={`${summary.betrayRate}%`} tone="pink" />
+          </div>
+
+          <div className="mt-6 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="space-y-4">
+              <Panel>
+                <div className="font-pixel text-xs text-neonPink">MVP</div>
+                <div className="mt-4 flex items-center gap-4">
+                  <PixelAvatar avatarId={summary.mvp?.avatarId || "jojo-segundo"} size="lg" />
+                  <div>
+                    <div className="font-pixel text-sm">{summary.mvp?.name || "N/A"}</div>
+                    <div className="mt-2 theme-muted">{summary.mvp?.teamName || "Sin equipo"}</div>
+                    <div className="mt-2 font-pixel text-[10px] text-arcadeGold">{summary.mvp?.coins || 0} coins</div>
+                  </div>
+                </div>
+              </Panel>
+
+              <div className="flex flex-wrap gap-3">
+                <ArcadeButton variant="ghost" onClick={onBackToRoom}>
+                  Volver a sala
+                </ArcadeButton>
+                <ArcadeButton variant="gold" onClick={onLeave}>
+                  Salir a menu
+                </ArcadeButton>
+              </div>
+            </div>
+
+            <Panel>
+              <div className="font-pixel text-xs text-arcadeGold">Ranking final</div>
+              <div className="mt-4 modal-ranking-scroll">
+                <RankingBoardContent teams={summary.ranking.teams} />
+              </div>
+            </Panel>
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function TeamListContent({ room, selectedTeamId }) {
+  return (
+    <div className="space-y-3">
+      {room.teams.map((team) => (
+        <TeamCard key={team.id} team={team} room={room} selectedTeamId={selectedTeamId} />
+      ))}
     </div>
   );
 }
@@ -542,7 +555,8 @@ function TeamAdminPanel({
   newTeamName,
   setNewTeamName,
   onCreateTeam,
-  onRenameTeam
+  onRenameTeam,
+  onDeleteTeam
 }) {
   const canEditTeams = room.status === "lobby" || room.status === "finished";
 
@@ -572,8 +586,18 @@ function TeamAdminPanel({
               >
                 Guardar
               </ArcadeButton>
+              <ArcadeButton
+                variant="danger"
+                disabled={!canEditTeams || team.playerIds.length > 0 || room.teams.length <= 1}
+                onClick={() => onDeleteTeam(team.id)}
+              >
+                Eliminar
+              </ArcadeButton>
             </div>
-            <div className="mt-2 text-sm theme-muted">{team.playerIds.length} / {TEAM_LIMIT} jugadores</div>
+            <div className="mt-2 text-sm theme-muted">
+              {team.playerIds.length} / {TEAM_LIMIT} jugadores
+              {team.playerIds.length > 0 ? " · Debe quedar vacio para eliminarse." : ""}
+            </div>
           </div>
         ))}
       </div>
@@ -634,6 +658,7 @@ export default function App() {
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [rankingOpen, setRankingOpen] = useState(false);
+  const [finishedModalOpen, setFinishedModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [teamDrafts, setTeamDrafts] = useState({});
   const timerRef = useRef(null);
@@ -675,6 +700,7 @@ export default function App() {
         setAdminPanelOpen(false);
         setTeamsOpen(false);
         setRankingOpen(false);
+        setFinishedModalOpen(false);
         return null;
       });
     };
@@ -692,6 +718,12 @@ export default function App() {
     if (!room?.teams) return;
     setTeamDrafts(Object.fromEntries(room.teams.map((team) => [team.id, team.name])));
   }, [room?.teams]);
+
+  useEffect(() => {
+    if (room?.status === "finished") {
+      setFinishedModalOpen(true);
+    }
+  }, [room?.status]);
 
   useEffect(() => {
     if (mode === "create") {
@@ -803,6 +835,7 @@ export default function App() {
     setAdminPanelOpen(false);
     setTeamsOpen(false);
     setRankingOpen(false);
+    setFinishedModalOpen(false);
     setNewTeamName("");
     setTeamDrafts({});
     setMode("create");
@@ -907,6 +940,10 @@ export default function App() {
     emitAdmin("admin:renameTeam", { teamId, teamName });
   }
 
+  function deleteTeamAction(teamId) {
+    emitAdmin("admin:deleteTeam", { teamId });
+  }
+
   if (!room || !livePlayer) {
     return (
       <div className="app-shell">
@@ -932,6 +969,9 @@ export default function App() {
 
   const currentPlayerIndex = room.ranking.players.findIndex((entry) => entry.playerId === livePlayer.id);
   const currentPlayerRanking = currentPlayerIndex >= 0 ? currentPlayerIndex + 1 : "-";
+  const canFinishGame = room.status === "round" || room.status === "results";
+  const canManageLobbyTeams = room.status === "lobby" || room.status === "finished";
+  const showRoundResults = room.status === "results" || Boolean(roundResults);
 
   return (
     <div className="app-shell px-3 py-3 sm:px-4 md:px-6">
@@ -989,21 +1029,35 @@ export default function App() {
         </Panel>
 
         {error && <div className="border border-neonPink/40 bg-neonPink/10 p-3 text-sm text-neonPink">{error}</div>}
+        {room.status === "lobby" && !isAdmin && (
+          <div className="lobby-notice theme-panel border-neonLime/30 bg-neonLime/10 px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="relative flex flex-wrap items-center justify-between gap-2">
+              <div className="hidden sm:block">
+                <div className="font-pixel text-[10px] text-neonLime">Lobby</div>
+                <div className="mt-2 text-sm theme-muted">
+                  Espera a que el administrador organice los equipos y active la primera ronda.
+                </div>
+              </div>
+              <div className="sm:hidden font-pixel text-[10px] text-neonLime">Esperando inicio de partida</div>
+              <div className="hidden sm:block font-pixel text-[10px] text-neonBlue">Pendiente de inicio</div>
+            </div>
+          </div>
+        )}
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_360px]">
-          <div className="space-y-4">
-            <Panel className="decision-stage">
+        <div className="desktop-main-grid grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_380px]">
+          <div className={clsx("flex flex-col gap-4", !showRoundResults && "h-full")}>
+            <Panel className={clsx("decision-stage", !showRoundResults && "desktop-fill-stage h-full")}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="font-pixel text-xs text-neonPink">Centro de decision</div>
-                  <div className="mt-2 max-w-2xl text-sm theme-muted">{getCenterMessage(room.status, isAdmin)}</div>
+                  <div className="decision-copy mt-2 max-w-2xl text-sm theme-muted">{getCenterMessage(room.status, isAdmin)}</div>
                 </div>
-                <div className="theme-soft border border-white/10 px-3 py-2 font-pixel text-[10px] text-neonLime">
+                <div className="round-chip theme-soft border border-white/10 px-3 py-2 font-pixel text-[10px] text-neonLime">
                   Ronda {room.roundNumber || 0}
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="decision-actions mt-4 grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
                   disabled={room.status !== "round" || Boolean(myVote)}
@@ -1026,16 +1080,69 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm theme-muted">
+              <div className="decision-meta mt-4 flex flex-wrap items-center gap-3 text-sm theme-muted">
                 <span>Tu voto: <span className="font-pixel text-[10px]">{myVote ? decisionLabels[myVote] : "Pendiente"}</span></span>
                 <span>Equipo: <span className="font-pixel text-[10px] text-neonBlue">{room.teams.find((team) => team.id === livePlayer.teamId)?.name || "Sin equipo"}</span></span>
               </div>
 
               {isAdmin && adminPanelOpen && (
-                <div className="mt-5 border-t border-white/10 pt-4">
+                <div className="admin-panel-body mt-5 border-t border-white/10 pt-4">
                   <div className="grid gap-4">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <label>
+                    <div className="admin-actions-grid grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {room.status === "lobby" && (
+                        <ArcadeButton variant="lime" className="admin-action-btn" onClick={() => emitAdmin("admin:startGame")}>
+                          Iniciar partida
+                        </ArcadeButton>
+                      )}
+                      {room.status === "round" && (
+                        <ArcadeButton variant="primary" className="admin-action-btn" onClick={() => emitAdmin("admin:resolveRound")}>
+                          Cerrar ronda
+                        </ArcadeButton>
+                      )}
+                      {room.status === "results" && (
+                        <ArcadeButton variant="primary" className="admin-action-btn" onClick={() => emitAdmin("admin:nextRound")}>
+                          Siguiente ronda
+                        </ArcadeButton>
+                      )}
+                      <ArcadeButton variant="danger" className="admin-action-btn" disabled={!canFinishGame} onClick={() => emitAdmin("admin:finishGame")}>
+                        Finalizar juego
+                      </ArcadeButton>
+                      <ArcadeButton variant="dark" className="admin-action-btn" onClick={() => emitAdmin("admin:resetGame")}>
+                        Reiniciar
+                      </ArcadeButton>
+                      <ArcadeButton variant="danger" className="admin-action-btn" onClick={() => emitAdmin("admin:deleteRoom")}>
+                        Eliminar sala
+                      </ArcadeButton>
+                    </div>
+
+                    {canManageLobbyTeams ? (
+                      <div className="admin-config-grid grid gap-3 md:grid-cols-2">
+                        <label className="md:col-span-1">
+                          <span className="mb-2 block font-pixel text-[10px] theme-muted">Tiempo por ronda (60-180s)</span>
+                          <input
+                            className="arcade-input"
+                            type="number"
+                            min="60"
+                            max="180"
+                            value={room.config.roundDuration}
+                            onChange={(event) => emitAdmin("admin:updateConfig", { config: { roundDuration: Number(event.target.value) } })}
+                          />
+                        </label>
+
+                        <label>
+                          <span className="mb-2 block font-pixel text-[10px] theme-muted">Minimo de jugadores por equipo</span>
+                          <input
+                            className="arcade-input"
+                            type="number"
+                            min="1"
+                            max="8"
+                            value={room.config.minPlayersPerTeam}
+                            onChange={(event) => emitAdmin("admin:updateConfig", { config: { minPlayersPerTeam: Number(event.target.value) } })}
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <label className="admin-config-single">
                         <span className="mb-2 block font-pixel text-[10px] theme-muted">Tiempo por ronda (60-180s)</span>
                         <input
                           className="arcade-input"
@@ -1046,94 +1153,81 @@ export default function App() {
                           onChange={(event) => emitAdmin("admin:updateConfig", { config: { roundDuration: Number(event.target.value) } })}
                         />
                       </label>
+                    )}
 
-                      <label>
-                        <span className="mb-2 block font-pixel text-[10px] theme-muted">Minimo de jugadores por equipo</span>
-                        <input
-                          className="arcade-input"
-                          type="number"
-                          min="1"
-                          max="8"
-                          value={room.config.minPlayersPerTeam}
-                          onChange={(event) => emitAdmin("admin:updateConfig", { config: { minPlayersPerTeam: Number(event.target.value) } })}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                      {room.status === "lobby" && (
-                        <ArcadeButton variant="lime" onClick={() => emitAdmin("admin:startGame")}>
-                          Iniciar partida
-                        </ArcadeButton>
-                      )}
-                      {room.status === "round" && (
-                        <ArcadeButton variant="primary" onClick={() => emitAdmin("admin:resolveRound")}>
-                          Cerrar ronda
-                        </ArcadeButton>
-                      )}
-                      {room.status === "results" && (
-                        <ArcadeButton variant="primary" onClick={() => emitAdmin("admin:nextRound")}>
-                          Siguiente ronda
-                        </ArcadeButton>
-                      )}
-                      <ArcadeButton variant="danger" onClick={() => emitAdmin("admin:finishGame")}>
-                        Finalizar juego
-                      </ArcadeButton>
-                      <ArcadeButton variant="dark" onClick={() => emitAdmin("admin:resetGame")}>
-                        Reiniciar
-                      </ArcadeButton>
-                      <ArcadeButton variant="danger" onClick={() => emitAdmin("admin:deleteRoom")}>
-                        Eliminar sala
-                      </ArcadeButton>
-                    </div>
-
-                    <TeamAdminPanel
-                      room={room}
-                      teamDrafts={teamDrafts}
-                      setTeamDrafts={setTeamDrafts}
-                      newTeamName={newTeamName}
-                      setNewTeamName={setNewTeamName}
-                      onCreateTeam={createTeamAction}
-                      onRenameTeam={renameTeamAction}
-                    />
+                    {canManageLobbyTeams && (
+                      <TeamAdminPanel
+                        room={room}
+                        teamDrafts={teamDrafts}
+                        setTeamDrafts={setTeamDrafts}
+                        newTeamName={newTeamName}
+                        setNewTeamName={setNewTeamName}
+                        onCreateTeam={createTeamAction}
+                        onRenameTeam={renameTeamAction}
+                        onDeleteTeam={deleteTeamAction}
+                      />
+                    )}
                   </div>
                 </div>
               )}
             </Panel>
 
-            {room.status === "finished" ? (
-              <GameFinished room={room} onLeave={leaveRoomAction} rankingOpen={rankingOpen} setRankingOpen={setRankingOpen} />
-            ) : room.status === "results" || roundResults ? (
-              <ResultsBoard room={room} rankingOpen={rankingOpen} setRankingOpen={setRankingOpen} />
+            {showRoundResults ? (
+              <ResultsBoard room={room} />
             ) : null}
           </div>
 
-          <div className="space-y-4">
-            <SectionToggle
-              title="Equipos"
-              subtitle="Vista secundaria del lobby y del avance general."
-              open={teamsOpen}
-              onToggle={() => setTeamsOpen((current) => !current)}
-              tone="blue"
-            >
-              <div className="space-y-3">
-                {room.teams.map((team) => (
-                  <TeamCard key={team.id} team={team} room={room} selectedTeamId={livePlayer.teamId} />
-                ))}
-              </div>
-            </SectionToggle>
+          <div className="flex h-full flex-col gap-4">
+            <div className="xl:hidden">
+              <SectionToggle
+                title="Equipos"
+                subtitle="Vista secundaria del lobby y del avance general."
+                open={teamsOpen}
+                onToggle={() => setTeamsOpen((current) => !current)}
+                tone="blue"
+              >
+                <TeamListContent room={room} selectedTeamId={livePlayer.teamId} />
+              </SectionToggle>
+            </div>
 
-            {room.status === "lobby" && !isAdmin && (
-              <Panel>
-                <div className="font-pixel text-xs text-neonLime">Lobby</div>
-                <div className="mt-2 text-sm theme-muted">
-                  Espera a que el administrador organice los equipos y active la primera ronda.
-                </div>
-              </Panel>
-            )}
+            <Panel className="hidden xl:flex xl:flex-1 xl:flex-col">
+              <div className="font-pixel text-xs text-neonBlue">Equipos</div>
+              <div className="mt-2 text-sm theme-muted">Vista secundaria del lobby y del avance general.</div>
+              <div className="mt-4 flex-1 sidebar-scroll">
+                <TeamListContent room={room} selectedTeamId={livePlayer.teamId} />
+              </div>
+            </Panel>
+
+            <div className="xl:hidden">
+              <SectionToggle
+                title="Ranking global"
+                subtitle="Se movio debajo de equipos para mantener el foco en la decision."
+                open={rankingOpen}
+                onToggle={() => setRankingOpen((current) => !current)}
+                tone="gold"
+              >
+                <RankingBoardContent teams={room.ranking.teams} />
+              </SectionToggle>
+            </div>
+
+            <Panel className="hidden xl:flex xl:flex-col">
+              <div className="font-pixel text-xs text-arcadeGold">Ranking global</div>
+              <div className="mt-2 text-sm theme-muted">Resumen persistente del avance por equipos.</div>
+              <div className="mt-4 sidebar-scroll">
+                <RankingBoardContent teams={room.ranking.teams} />
+              </div>
+            </Panel>
           </div>
         </div>
       </div>
+
+      {room.status === "finished" && finishedModalOpen && (
+        <GameFinishedModal
+          room={room}
+          onBackToRoom={() => setFinishedModalOpen(false)}
+          onLeave={leaveRoomAction}
+        />
+      )}
     </div>
   );
 }

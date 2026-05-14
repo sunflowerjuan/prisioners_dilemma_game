@@ -284,6 +284,29 @@ export function renameTeam(room, teamId, teamName) {
   return team;
 }
 
+export function deleteTeamFromRoom(room, teamId) {
+  if (!["lobby", "finished"].includes(room.status)) {
+    throw new Error("Solo puedes eliminar equipos antes de iniciar o cuando el juego ya termino.");
+  }
+
+  const team = room.teams.find((item) => item.id === teamId);
+  if (!team) {
+    throw new Error("Equipo no encontrado.");
+  }
+
+  if (team.playerIds.length > 0) {
+    throw new Error("Primero mueve o saca a los jugadores de ese equipo.");
+  }
+
+  if (room.teams.length <= 1) {
+    throw new Error("La sala debe conservar al menos un equipo.");
+  }
+
+  room.teams = room.teams.filter((item) => item.id !== teamId);
+  delete room.lastTeamDecisions[teamId];
+  persistRoom(room);
+}
+
 export function reconnectPlayer(room, playerId) {
   const player = room.players.find((item) => item.id === playerId);
   if (!player) return null;
@@ -318,7 +341,6 @@ export function leavePlayer(room, playerId) {
   room.teams.forEach((team) => {
     team.playerIds = team.playerIds.filter((id) => id !== playerId);
   });
-  room.teams = room.teams.filter((team) => team.playerIds.length > 0);
 
   if (room.players.length === 0) {
     clearRoomTimer(room.code);
@@ -480,6 +502,10 @@ export function scheduleCurrentRound(room, onExpire) {
 }
 
 export function finishGame(room) {
+  if (!["round", "results"].includes(room.status)) {
+    throw new Error("No hay una partida en curso para finalizar.");
+  }
+
   if (room.status === "round") {
     resolveRound(room);
   }
