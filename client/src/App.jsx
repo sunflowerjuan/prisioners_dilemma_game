@@ -10,6 +10,75 @@ const decisionLabels = {
   betray: "Traicionar"
 };
 
+function playSoundSequence(steps, volume = 0.035) {
+  if (typeof window === "undefined") return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  const audioCtx = new AudioContextClass();
+  const now = audioCtx.currentTime;
+
+  steps.forEach(({ frequency, duration, delay = 0, type = "square", gain = 1 }) => {
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    gainNode.gain.setValueAtTime(volume * gain, now + delay);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start(now + delay);
+    oscillator.stop(now + delay + duration);
+  });
+
+  const totalDuration = steps.reduce((max, step) => Math.max(max, (step.delay || 0) + step.duration), 0);
+  setTimeout(() => {
+    audioCtx.close().catch(() => {});
+  }, Math.ceil((totalDuration + 0.08) * 1000));
+}
+
+const SOUND_EFFECTS = {
+  ui: [
+    { frequency: 520, duration: 0.03, gain: 0.7, type: "square" },
+    { frequency: 660, duration: 0.04, delay: 0.03, gain: 0.6, type: "square" }
+  ],
+  toggle: [
+    { frequency: 460, duration: 0.03, gain: 0.6, type: "triangle" },
+    { frequency: 720, duration: 0.05, delay: 0.035, gain: 0.7, type: "triangle" }
+  ],
+  cooperate: [
+    { frequency: 440, duration: 0.05, gain: 0.7, type: "triangle" },
+    { frequency: 554, duration: 0.07, delay: 0.04, gain: 0.7, type: "triangle" },
+    { frequency: 659, duration: 0.09, delay: 0.09, gain: 0.7, type: "triangle" }
+  ],
+  betray: [
+    { frequency: 620, duration: 0.05, gain: 0.7, type: "sawtooth" },
+    { frequency: 480, duration: 0.08, delay: 0.045, gain: 0.75, type: "sawtooth" }
+  ],
+  success: [
+    { frequency: 660, duration: 0.04, gain: 0.65, type: "square" },
+    { frequency: 880, duration: 0.08, delay: 0.04, gain: 0.7, type: "square" }
+  ],
+  roundStart: [
+    { frequency: 392, duration: 0.05, gain: 0.65, type: "triangle" },
+    { frequency: 523, duration: 0.06, delay: 0.05, gain: 0.7, type: "triangle" },
+    { frequency: 784, duration: 0.1, delay: 0.11, gain: 0.75, type: "triangle" }
+  ],
+  roundEnd: [
+    { frequency: 784, duration: 0.04, gain: 0.6, type: "square" },
+    { frequency: 659, duration: 0.05, delay: 0.045, gain: 0.6, type: "square" },
+    { frequency: 523, duration: 0.09, delay: 0.095, gain: 0.7, type: "square" }
+  ],
+  warning: [
+    { frequency: 320, duration: 0.08, gain: 0.55, type: "square" }
+  ]
+};
+
+function triggerSound(effect, enabled = true) {
+  if (!enabled) return;
+  playSoundSequence(SOUND_EFFECTS[effect] || SOUND_EFFECTS.ui);
+}
+
 function saveSession(session) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
@@ -47,6 +116,157 @@ function PixelAvatar({ avatarId, size = "md" }) {
     lg: "h-20 w-20"
   };
 
+  const renderSprite = () => {
+    switch (avatar.sprite) {
+      case "duck":
+        return (
+          <>
+            <div className="absolute inset-x-1 top-1 h-3 bg-[#ffe45a]" />
+            <div className="absolute left-4 top-0 h-2 w-3 bg-[#ffe45a]" />
+            <div className="absolute right-3 top-2 h-2 w-4 bg-[#ff9a3d]" />
+          </>
+        );
+      case "jojo":
+        return (
+          <>
+            <div className="absolute inset-x-1 top-0 h-3 bg-[#6d3a1d]" />
+            <div className="absolute left-0 top-2 h-4 w-3 bg-[#6d3a1d]" />
+            <div className="absolute right-0 top-2 h-4 w-3 bg-[#6d3a1d]" />
+            <div className="absolute left-2 top-1 h-2 w-2 bg-[#c98f2e]" />
+            <div className="absolute left-4 top-0 h-2 w-4 bg-[#c98f2e]" />
+            <div className="absolute right-3 top-1 h-2 w-2 bg-[#c98f2e]" />
+            <div className="absolute left-1 right-1 bottom-0 h-4 bg-[#bf2434]" />
+            <div className="absolute left-0 bottom-2 h-3 w-2 bg-[#8d1b28]" />
+            <div className="absolute right-0 bottom-2 h-3 w-2 bg-[#8d1b28]" />
+            <div className="absolute left-6 bottom-1 h-3 w-1 bg-[#dbe9ff]" />
+          </>
+        );
+      case "neon":
+        return (
+          <>
+            <div className="absolute inset-x-2 top-1 h-3 bg-[#11395c]" />
+            <div className="absolute left-1 top-2 h-5 w-2 bg-[#0edbff]" />
+            <div className="absolute right-1 top-1 h-5 w-2 bg-[#0edbff]" />
+            <div className="absolute right-2 top-0 h-2 w-2 bg-[#f9ff65]" />
+            <div className="absolute left-1 right-1 bottom-0 h-4 bg-[#12365b]" />
+            <div className="absolute left-5 bottom-2 h-2 w-6 bg-[#f2cc4d]" />
+          </>
+        );
+      case "rei":
+        return (
+          <>
+            <div className="absolute inset-x-1 top-0 h-3 bg-[#c5e2ff]" />
+            <div className="absolute left-0 top-2 h-5 w-3 bg-[#c5e2ff]" />
+            <div className="absolute right-0 top-2 h-5 w-3 bg-[#c5e2ff]" />
+            <div className="absolute left-2 right-2 top-3 h-2 bg-[#fdfcff]" />
+            <div className="absolute left-1 right-1 bottom-0 h-4 bg-[#fdfcff]" />
+            <div className="absolute left-4 bottom-2 h-2 w-8 bg-[#d32235]" />
+          </>
+        );
+      case "halo":
+        return (
+          <>
+            <div className="absolute left-3 right-3 top-0 h-1 border border-[#54f7ff] bg-transparent" />
+            <div className="absolute left-4 right-4 top-1 h-1 bg-[#54f7ff]" />
+          </>
+        );
+      case "bandana":
+        return (
+          <>
+            <div className="absolute inset-x-1 top-3 h-2 bg-[#ff7a59]" />
+            <div className="absolute right-1 top-4 h-3 w-2 bg-[#ff7a59]" />
+          </>
+        );
+      case "eva":
+        return (
+          <>
+            <div className="absolute left-4 top-0 h-3 w-2 bg-[#80ff72]" />
+            <div className="absolute right-4 top-0 h-3 w-2 bg-[#80ff72]" />
+            <div className="absolute inset-x-2 top-1 h-3 bg-[#6fff61]" />
+            <div className="absolute left-1 top-2 h-4 w-2 bg-[#3d1f69]" />
+            <div className="absolute right-1 top-2 h-4 w-2 bg-[#3d1f69]" />
+            <div className="absolute left-4 top-3 h-2 w-2 bg-[#111827]" />
+            <div className="absolute right-4 top-3 h-2 w-2 bg-[#111827]" />
+            <div className="absolute left-5 top-5 h-3 w-2 bg-[#111827]" />
+            <div className="absolute inset-x-1 bottom-0 h-4 bg-[#4b2489]" />
+            <div className="absolute left-3 bottom-2 h-2 w-2 bg-[#80ff72]" />
+            <div className="absolute right-3 bottom-2 h-2 w-2 bg-[#80ff72]" />
+          </>
+        );
+      case "freddy":
+        return (
+          <>
+            <div className="absolute left-1 top-0 h-3 w-3 bg-[#5c3119]" />
+            <div className="absolute right-1 top-0 h-3 w-3 bg-[#5c3119]" />
+            <div className="absolute left-3 top-0 h-1 w-6 bg-[#111]" />
+            <div className="absolute left-5 top-1 h-2 w-2 bg-[#111]" />
+            <div className="absolute inset-x-2 top-1 h-4 bg-[#8f5a34]" />
+            <div className="absolute left-4 right-4 top-4 h-3 bg-[#dcb48a]" />
+            <div className="absolute left-2 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute right-2 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute left-5 top-6 h-2 w-2 bg-[#b30f17]" />
+            <div className="absolute left-4 right-4 bottom-1 h-2 bg-[#3f2213]" />
+          </>
+        );
+      case "chica":
+        return (
+          <>
+            <div className="absolute left-1 top-1 h-3 w-3 bg-[#f6dd69]" />
+            <div className="absolute right-1 top-1 h-3 w-3 bg-[#f6dd69]" />
+            <div className="absolute left-5 top-0 h-2 w-2 bg-[#f35d7a]" />
+            <div className="absolute inset-x-2 top-2 h-4 bg-[#f2d35b]" />
+            <div className="absolute left-4 right-4 top-5 h-2 bg-[#fff3c7]" />
+            <div className="absolute left-4 right-4 top-7 h-2 bg-[#ff8c00]" />
+            <div className="absolute left-1 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute right-1 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute left-3 right-3 bottom-0 h-3 bg-[#ffffff]" />
+          </>
+        );
+      case "bonny":
+        return (
+          <>
+            <div className="absolute left-1 top-0 h-5 w-2 bg-[#6d63d8]" />
+            <div className="absolute left-3 top-1 h-2 w-2 bg-[#c5bfff]" />
+            <div className="absolute right-1 top-0 h-5 w-2 bg-[#6d63d8]" />
+            <div className="absolute right-3 top-1 h-2 w-2 bg-[#c5bfff]" />
+            <div className="absolute inset-x-2 top-2 h-4 bg-[#7b76c9]" />
+            <div className="absolute left-4 right-4 top-5 h-3 bg-[#ddd3ee]" />
+            <div className="absolute left-2 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute right-2 top-6 h-2 w-2 bg-[#111]" />
+            <div className="absolute left-4 right-4 bottom-1 h-2 bg-[#5c4dbf]" />
+            <div className="absolute left-5 bottom-0 h-2 w-6 bg-[#ff2b62]" />
+          </>
+        );
+      case "turing":
+        return (
+          <>
+            <div className="absolute inset-x-2 top-1 h-3 bg-[#574234]" />
+            <div className="absolute left-1 top-2 h-4 w-2 bg-[#574234]" />
+            <div className="absolute right-1 top-2 h-4 w-2 bg-[#574234]" />
+            <div className="absolute left-3 right-3 top-0 h-1 bg-[#c6b06b]" />
+            <div className="absolute left-1 right-1 bottom-0 h-4 bg-[#4e678c]" />
+            <div className="absolute left-4 bottom-2 h-6 w-1 bg-[#f6f7fb]" />
+            <div className="absolute left-5 bottom-1 h-2 w-6 bg-[#1c2f55]" />
+          </>
+        );
+      case "twilight":
+        return (
+          <>
+            <div className="absolute inset-x-2 top-1 h-3 bg-[#31225f]" />
+            <div className="absolute left-0 top-1 h-4 w-2 bg-[#31225f]" />
+            <div className="absolute right-0 top-1 h-4 w-2 bg-[#31225f]" />
+            <div className="absolute left-2 top-0 h-2 w-2 bg-[#ff4fb0]" />
+            <div className="absolute left-4 top-1 h-2 w-2 bg-[#8b6cff]" />
+            <div className="absolute left-1 right-1 bottom-0 h-4 bg-[#a77cff]" />
+            <div className="absolute right-1 top-5 h-3 w-2 bg-[#ff65c5]" />
+            <div className="absolute left-4 bottom-2 h-8 w-2 bg-[#1ee0ff]" />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       className={clsx(
@@ -55,46 +275,7 @@ function PixelAvatar({ avatarId, size = "md" }) {
       )}
       style={{ background: `linear-gradient(180deg, ${avatar.accent}, ${avatar.skin})` }}
     >
-      {avatar.hat === "duck" && (
-        <>
-          <div className="absolute inset-x-1 top-1 h-3 bg-[#ffe45a]" />
-          <div className="absolute left-4 top-0 h-2 w-3 bg-[#ffe45a]" />
-          <div className="absolute right-3 top-2 h-2 w-4 bg-[#ff9a3d]" />
-        </>
-      )}
-      {avatar.hat === "jojo" && (
-        <>
-          <div className="absolute inset-x-2 top-1 h-3 bg-[#1f2758]" />
-          <div className="absolute left-1 top-2 h-3 w-3 bg-[#1f2758]" />
-          <div className="absolute right-1 top-2 h-3 w-3 bg-[#1f2758]" />
-          <div className="absolute left-5 top-0 h-2 w-2 bg-[#ffd447]" />
-        </>
-      )}
-      {avatar.hat === "antenna" && (
-        <>
-          <div className="absolute inset-x-2 top-2 h-3 bg-[#273147]" />
-          <div className="absolute left-[50%] top-0 h-3 w-1 -translate-x-1/2 bg-[#273147]" />
-          <div className="absolute left-[50%] top-0 h-2 w-2 -translate-x-1/2 bg-[#ffd447]" />
-        </>
-      )}
-      {avatar.hat === "mohawk" && (
-        <>
-          <div className="absolute left-[50%] top-0 h-6 w-2 -translate-x-1/2 bg-[#ff4fd8]" />
-          <div className="absolute left-[50%] top-2 h-2 w-4 -translate-x-1/2 bg-[#7a5cff]" />
-        </>
-      )}
-      {avatar.hat === "halo" && (
-        <>
-          <div className="absolute left-3 right-3 top-0 h-1 border border-[#54f7ff] bg-transparent" />
-          <div className="absolute left-4 right-4 top-1 h-1 bg-[#54f7ff]" />
-        </>
-      )}
-      {avatar.hat === "bandana" && (
-        <>
-          <div className="absolute inset-x-1 top-3 h-2 bg-[#ff7a59]" />
-          <div className="absolute right-1 top-4 h-3 w-2 bg-[#ff7a59]" />
-        </>
-      )}
+      {renderSprite()}
       <div className="absolute inset-x-2 top-5 h-5 bg-black/70" />
       <div className="absolute left-2 top-7 h-2 w-2" style={{ backgroundColor: avatar.eye }} />
       <div className="absolute right-2 top-7 h-2 w-2" style={{ backgroundColor: avatar.eye }} />
@@ -233,8 +414,8 @@ function JoinScreen({
           : "La lista se actualiza automaticamente con los cambios del lobby.";
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-4 lg:px-6">
-      <div className="grid w-full gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+    <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-3">
+      <div className="grid w-full gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-4">
         <section className="flex flex-col justify-center">
           <ThemeSwitcher theme={theme} setTheme={setTheme} />
           <h1 className="mt-4 max-w-3xl font-pixel text-4xl leading-[1.05] md:text-6xl xl:text-7xl">
@@ -245,16 +426,16 @@ function JoinScreen({
             Multiplayer Corporate Prisoner Arcade
           </div>
           <p className="mt-4 max-w-2xl text-base theme-muted md:text-lg">
-            Equipos empresariales votan en tiempo real, compiten 1 vs 1 y sobreviven ronda a ronda con estrategia, traicion y coins.
+            Equipos empresariales votan en tiempo real, usan una sola decision por ronda y se enfrentan contra todos los demas equipos para sobrevivir con estrategia, traicion y coins.
           </p>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:mt-5">
             <MiniStat label="Jugadores por equipo" value={`Hasta ${TEAM_LIMIT}`} tone="pink" />
             <MiniStat label="Flujo de lobby" value="Admin controla equipos" tone="lime" />
           </div>
         </section>
 
-        <Panel className="self-center p-4 md:p-5">
+        <Panel className="self-center p-4 md:p-5 lg:p-4">
           <div className="flex gap-3">
             <ArcadeButton
               variant={mode === "create" ? "lime" : "ghost"}
@@ -272,7 +453,7 @@ function JoinScreen({
             </ArcadeButton>
           </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-3 lg:space-y-2.5">
             <label className="block">
               <span className="mb-2 block font-pixel text-[10px] theme-muted">Nombre</span>
               <input
@@ -337,13 +518,13 @@ function JoinScreen({
 
             <div>
               <div className="mb-3 font-pixel text-[10px] theme-muted">Avatar pixel</div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:gap-1.5">
                 {AVATARS.map((avatar) => (
                   <button
                     type="button"
                     key={avatar.id}
                     className={clsx(
-                      "theme-soft rounded-none border p-2",
+                      "theme-soft rounded-none border p-2 lg:p-1.5",
                       form.avatarId === avatar.id ? "border-neonPink bg-neonPink/10" : "border-white/10"
                     )}
                     onClick={() => setForm((current) => ({ ...current, avatarId: avatar.id }))}
@@ -351,7 +532,7 @@ function JoinScreen({
                     <div className="mx-auto w-fit">
                       <PixelAvatar avatarId={avatar.id} size="sm" />
                     </div>
-                    <div className="mt-2 text-center font-pixel text-[8px] theme-muted">{avatar.name}</div>
+                    <div className="mt-2 text-center font-pixel text-[8px] theme-muted lg:mt-1.5 lg:text-[7px]">{avatar.name}</div>
                   </button>
                 ))}
               </div>
@@ -411,8 +592,19 @@ function TeamCard({ team, room, selectedTeamId }) {
   );
 }
 
-function ResultsBoard({ room }) {
+function ResultsBoard({ room, selectedTeamId, onNavigate }) {
   const lastResult = room.currentRound?.results || room.history[0];
+  const pairResults = (lastResult?.pairResults || []).slice();
+  const orderedPairResults = [
+    ...pairResults.filter((pair) => pair.teamAId === selectedTeamId || pair.teamBId === selectedTeamId),
+    ...pairResults.filter((pair) => pair.teamAId !== selectedTeamId && pair.teamBId !== selectedTeamId)
+  ];
+  const myMatchCount = orderedPairResults.filter((pair) => pair.teamAId === selectedTeamId || pair.teamBId === selectedTeamId).length;
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [room.roundNumber, orderedPairResults.length, selectedTeamId]);
 
   if (!lastResult) {
     return (
@@ -422,40 +614,136 @@ function ResultsBoard({ room }) {
     );
   }
 
+  const safeIndex = orderedPairResults.length ? Math.min(currentIndex, orderedPairResults.length - 1) : 0;
+  const currentPair = orderedPairResults[safeIndex];
+  const isMyMatch = currentPair && (currentPair.teamAId === selectedTeamId || currentPair.teamBId === selectedTeamId);
+
   return (
     <Panel className="overflow-visible">
-      <div className="font-pixel text-xs text-neonPink">Resultado de la ronda {room.roundNumber}</div>
-      <div className="results-board mt-4 space-y-3">
-        {lastResult.pairResults.map((pair) => (
-          <div key={`${pair.teamAId}-${pair.teamBId || "bye"}`} className="theme-soft border border-white/10 p-3">
-            <div className="results-pair-header flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0 font-pixel text-[10px] break-words">
-                {pair.teamAName} vs {pair.teamBName}
+      <div className="results-toolbar flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="font-pixel text-xs text-neonPink">Resultado de la ronda {room.roundNumber}</div>
+          <div className="mt-2 text-sm theme-muted">
+            {orderedPairResults.length} enfrentamientos
+            {myMatchCount > 0 ? ` · ${myMatchCount} de tu equipo` : ""}
+          </div>
+        </div>
+        <div className="results-nav flex items-center gap-2">
+          <ArcadeButton
+            variant="ghost"
+            className="results-nav-btn"
+            disabled={safeIndex === 0}
+            onClick={() => {
+              setCurrentIndex((index) => Math.max(0, index - 1));
+              onNavigate?.();
+            }}
+          >
+            Anterior
+          </ArcadeButton>
+          <ArcadeButton
+            variant="primary"
+            className="results-nav-btn"
+            disabled={safeIndex === orderedPairResults.length - 1}
+            onClick={() => {
+              setCurrentIndex((index) => Math.min(orderedPairResults.length - 1, index + 1));
+              onNavigate?.();
+            }}
+          >
+            Siguiente
+          </ArcadeButton>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="font-pixel text-[9px] text-neonBlue">
+          Enfrentamiento {orderedPairResults.length ? safeIndex + 1 : 0}/{orderedPairResults.length}
+        </div>
+        {isMyMatch && (
+          <div className="results-highlight-chip font-pixel text-[8px] text-neonLime">
+            Tu equipo participa aqui
+          </div>
+        )}
+      </div>
+
+      {currentPair && (
+        <div
+          key={`${currentPair.teamAId}-${currentPair.teamBId}-${safeIndex}`}
+          className={clsx(
+            "results-card theme-soft mt-4 border border-white/10 p-3",
+            isMyMatch && "results-card-my-match"
+          )}
+        >
+          <div className="results-pair-header flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0 font-pixel text-[10px] break-words">
+              {currentPair.teamAName} vs {currentPair.teamBName}
+            </div>
+            <div className="font-pixel text-[8px] text-neonLime">
+              {currentPair.winner ? `Gana ${currentPair.winner === currentPair.teamAId ? currentPair.teamAName : currentPair.teamBName}` : "Empate"}
+            </div>
+          </div>
+          <div className="results-pair-grid mt-3 grid gap-2 md:grid-cols-2">
+            <div
+              className={clsx(
+                "min-w-0 rounded-none border border-neonBlue/20 bg-neonBlue/5 p-3",
+                currentPair.teamAId === selectedTeamId && "results-team-my-side"
+              )}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs theme-muted">{currentPair.teamAName}</div>
+                {currentPair.teamAId === selectedTeamId && (
+                  <div className="font-pixel text-[8px] text-neonLime">Tu equipo</div>
+                )}
               </div>
-              <div className="font-pixel text-[8px] text-neonLime">
-                {pair.winner ? `Gana ${pair.winner === pair.teamAId ? pair.teamAName : pair.teamBName}` : "Empate"}
+              <div className="mt-2 font-pixel text-[10px] text-neonBlue">{decisionLabels[currentPair.decisionA] || "Descansa"}</div>
+              <div className="mt-2 text-sm text-arcadeGold">
+                {currentPair.deltaA >= 0 ? "+" : ""}
+                {currentPair.deltaA} coins
               </div>
             </div>
-            <div className="results-pair-grid mt-3 grid gap-2 md:grid-cols-2">
-              <div className="min-w-0 rounded-none border border-neonBlue/20 bg-neonBlue/5 p-3">
-                <div className="text-xs theme-muted">{pair.teamAName}</div>
-                <div className="mt-2 font-pixel text-[10px] text-neonBlue">{decisionLabels[pair.decisionA] || "Descansa"}</div>
-                <div className="mt-2 text-sm text-arcadeGold">
-                  {pair.deltaA >= 0 ? "+" : ""}
-                  {pair.deltaA} coins
-                </div>
+            <div
+              className={clsx(
+                "min-w-0 rounded-none border border-neonPink/20 bg-neonPink/5 p-3",
+                currentPair.teamBId === selectedTeamId && "results-team-my-side"
+              )}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs theme-muted">{currentPair.teamBName}</div>
+                {currentPair.teamBId === selectedTeamId && (
+                  <div className="font-pixel text-[8px] text-neonLime">Tu equipo</div>
+                )}
               </div>
-              <div className="min-w-0 rounded-none border border-neonPink/20 bg-neonPink/5 p-3">
-                <div className="text-xs theme-muted">{pair.teamBName}</div>
-                <div className="mt-2 font-pixel text-[10px] text-neonPink">{decisionLabels[pair.decisionB] || "Descansa"}</div>
-                <div className="mt-2 text-sm text-arcadeGold">
-                  {pair.deltaB >= 0 ? "+" : ""}
-                  {pair.deltaB} coins
-                </div>
+              <div className="mt-2 font-pixel text-[10px] text-neonPink">{decisionLabels[currentPair.decisionB] || "Descansa"}</div>
+              <div className="mt-2 text-sm text-arcadeGold">
+                {currentPair.deltaB >= 0 ? "+" : ""}
+                {currentPair.deltaB} coins
               </div>
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      <div className="results-index-strip mt-4 flex flex-wrap gap-2">
+        {orderedPairResults.map((pair, index) => {
+          const isActive = index === safeIndex;
+          const isMine = pair.teamAId === selectedTeamId || pair.teamBId === selectedTeamId;
+          return (
+            <button
+              key={`${pair.teamAId}-${pair.teamBId}-${index}`}
+              type="button"
+              className={clsx(
+                "results-index-btn font-pixel text-[8px]",
+                isActive && "results-index-btn-active",
+                isMine && "results-index-btn-mine"
+              )}
+              onClick={() => {
+                setCurrentIndex(index);
+                onNavigate?.();
+              }}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
       </div>
     </Panel>
   );
@@ -662,6 +950,7 @@ export default function App() {
   const [newTeamName, setNewTeamName] = useState("");
   const [teamDrafts, setTeamDrafts] = useState({});
   const timerRef = useRef(null);
+  const previousStatusRef = useRef(null);
   const currentRound = room?.currentRound;
   const roundSecondsRemaining = currentRound?.secondsRemaining;
   const roundEndsAt = currentRound?.endsAt;
@@ -782,18 +1071,24 @@ export default function App() {
   useEffect(() => {
     if (!soundEnabled || room?.status !== "round") return;
     if (roundSecondsRemaining > 5 || roundSecondsRemaining === 0) return;
-    const audioCtx = new window.AudioContext();
-    const oscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    oscillator.type = "square";
-    oscillator.frequency.value = 320;
-    gain.gain.value = 0.03;
-    oscillator.connect(gain);
-    gain.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.08);
-    return () => audioCtx.close();
+    triggerSound("warning", soundEnabled);
   }, [roundSecondsRemaining, room?.status, soundEnabled]);
+
+  useEffect(() => {
+    if (!soundEnabled || !room?.status) {
+      previousStatusRef.current = room?.status || null;
+      return;
+    }
+
+    const previousStatus = previousStatusRef.current;
+    if (previousStatus && previousStatus !== room.status) {
+      if (room.status === "round") triggerSound("roundStart", soundEnabled);
+      if (room.status === "results") triggerSound("roundEnd", soundEnabled);
+      if (room.status === "finished") triggerSound("success", soundEnabled);
+    }
+
+    previousStatusRef.current = room.status;
+  }, [room?.status, soundEnabled]);
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -914,14 +1209,20 @@ export default function App() {
   function emitAdmin(event, payload = {}) {
     socket.emit(event, { roomCode: room.code, playerId: livePlayer.id, ...payload }, (response) => {
       if (!response?.ok) setError(response?.message || "No se pudo ejecutar la accion.");
-      else setError("");
+      else {
+        setError("");
+        triggerSound("success", soundEnabled);
+      }
     });
   }
 
   function emitVote(decision) {
     socket.emit("player:vote", { roomCode: room.code, playerId: livePlayer.id, decision }, (response) => {
       if (!response?.ok) setError(response?.message || "No se pudo registrar el voto.");
-      else setError("");
+      else {
+        setError("");
+        triggerSound(decision === "cooperate" ? "cooperate" : "betray", soundEnabled);
+      }
     });
   }
 
@@ -997,11 +1298,17 @@ export default function App() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <ArcadeButton variant="dark" className="flex-1 sm:flex-none" onClick={() => setConfigOpen((current) => !current)}>
+              <ArcadeButton variant="dark" className="flex-1 sm:flex-none" onClick={() => {
+                setConfigOpen((current) => !current);
+                triggerSound("toggle", soundEnabled);
+              }}>
                 Config
               </ArcadeButton>
               {isAdmin && (
-                <ArcadeButton variant={adminPanelOpen ? "lime" : "ghost"} className="flex-1 sm:flex-none" onClick={() => setAdminPanelOpen((current) => !current)}>
+                <ArcadeButton variant={adminPanelOpen ? "lime" : "ghost"} className="flex-1 sm:flex-none" onClick={() => {
+                  setAdminPanelOpen((current) => !current);
+                  triggerSound("toggle", soundEnabled);
+                }}>
                   Panel admin
                 </ArcadeButton>
               )}
@@ -1016,7 +1323,16 @@ export default function App() {
               <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
                 <ThemeSwitcher theme={theme} setTheme={setTheme} />
                 <div className="flex flex-wrap gap-3">
-                  <ArcadeButton variant={soundEnabled ? "lime" : "ghost"} onClick={() => setSoundEnabled((current) => !current)}>
+                  <ArcadeButton variant={soundEnabled ? "lime" : "ghost"} onClick={() => {
+                    const nextEnabled = !soundEnabled;
+                    setSoundEnabled(nextEnabled);
+                    if (nextEnabled) {
+                      playSoundSequence([
+                        { frequency: 520, duration: 0.04, gain: 0.7, type: "triangle" },
+                        { frequency: 780, duration: 0.08, delay: 0.04, gain: 0.75, type: "triangle" }
+                      ]);
+                    }
+                  }}>
                     Sonido {soundEnabled ? "ON" : "OFF"}
                   </ArcadeButton>
                   <ArcadeButton variant="dark" onClick={() => setConfigOpen(false)}>
@@ -1173,7 +1489,7 @@ export default function App() {
             </Panel>
 
             {showRoundResults ? (
-              <ResultsBoard room={room} />
+              <ResultsBoard room={room} selectedTeamId={livePlayer.teamId} onNavigate={() => triggerSound("ui", soundEnabled)} />
             ) : null}
           </div>
 
@@ -1181,18 +1497,19 @@ export default function App() {
             <div className="xl:hidden">
               <SectionToggle
                 title="Equipos"
-                subtitle="Vista secundaria del lobby y del avance general."
                 open={teamsOpen}
-                onToggle={() => setTeamsOpen((current) => !current)}
+                onToggle={() => {
+                  setTeamsOpen((current) => !current);
+                  triggerSound("ui", soundEnabled);
+                }}
                 tone="blue"
               >
                 <TeamListContent room={room} selectedTeamId={livePlayer.teamId} />
               </SectionToggle>
             </div>
 
-            <Panel className="hidden xl:flex xl:flex-1 xl:flex-col">
+            <Panel className="hidden xl:flex xl:flex-col">
               <div className="font-pixel text-xs text-neonBlue">Equipos</div>
-              <div className="mt-2 text-sm theme-muted">Vista secundaria del lobby y del avance general.</div>
               <div className="mt-4 flex-1 sidebar-scroll">
                 <TeamListContent room={room} selectedTeamId={livePlayer.teamId} />
               </div>
@@ -1201,9 +1518,11 @@ export default function App() {
             <div className="xl:hidden">
               <SectionToggle
                 title="Ranking global"
-                subtitle="Se movio debajo de equipos para mantener el foco en la decision."
                 open={rankingOpen}
-                onToggle={() => setRankingOpen((current) => !current)}
+                onToggle={() => {
+                  setRankingOpen((current) => !current);
+                  triggerSound("ui", soundEnabled);
+                }}
                 tone="gold"
               >
                 <RankingBoardContent teams={room.ranking.teams} />
