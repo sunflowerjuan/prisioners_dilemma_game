@@ -6,7 +6,8 @@ Aplicacion web multijugador inspirada en el Dilema del Prisionero para equipos e
 - Salas con codigo unico.
 - Panel de administrador para iniciar, cerrar rondas, avanzar, reiniciar y finalizar.
 - Equipos con votos colectivos por mayoria.
-- Emparejamiento aleatorio 1 vs 1 evitando repeticiones consecutivas cuando es posible.
+- Desempates y equipos sin votos resueltos aleatoriamente con sesgo 51% a cooperar.
+- Cada ronda enfrenta a todos los equipos entre si usando una unica decision colectiva por equipo.
 - Sistema de coins y ranking global.
 - Interfaz retro pixel/cyber responsive.
 - Reconexión de jugadores con sesion guardada en `localStorage`.
@@ -78,7 +79,7 @@ npm run start
 
 Cada miembro del equipo recibe el mismo resultado colectivo.
 
-Si un equipo empata en votos, se mantiene la ultima decision colectiva del equipo; si no existe, se usa `Cooperar`.
+Si un equipo no recibe votos o empata internamente, su decision colectiva se resuelve al azar con `51%` de probabilidad de `Cooperar` y `49%` de `Traicionar`.
 
 ## Estado actual
 

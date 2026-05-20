@@ -52,6 +52,10 @@ function serializableRoom(room) {
   return JSON.parse(JSON.stringify(room));
 }
 
+function randomDecision() {
+  return Math.random() < 0.51 ? "cooperate" : "betray";
+}
+
 function createBaseTeam(name, id = entityId()) {
   return {
     id,
@@ -104,7 +108,7 @@ function majorityDecision(room, teamId) {
 
   if (betrayCount > cooperateCount) return "betray";
   if (cooperateCount > betrayCount) return "cooperate";
-  return room.lastTeamDecisions[teamId] || "cooperate";
+  return randomDecision();
 }
 
 function scorePair(decisionA, decisionB) {
@@ -113,23 +117,11 @@ function scorePair(decisionA, decisionB) {
 
 function generatePairings(room) {
   const teamIds = shuffle(room.teams.map((team) => team.id));
-  const previousPairs = new Set(
-    (room.lastPairings || []).map((pair) => `${pair[0]}:${pair[1]}`)
-  );
-
   const pairs = [];
-  while (teamIds.length > 1) {
-    const first = teamIds.shift();
-    let matchIndex = teamIds.findIndex((candidate) => {
-      return !previousPairs.has(`${first}:${candidate}`) && !previousPairs.has(`${candidate}:${first}`);
-    });
-    if (matchIndex === -1) matchIndex = 0;
-    const second = teamIds.splice(matchIndex, 1)[0];
-    pairs.push([first, second]);
-  }
-
-  if (teamIds.length === 1) {
-    pairs.push([teamIds[0], null]);
+  for (let index = 0; index < teamIds.length; index += 1) {
+    for (let rivalIndex = index + 1; rivalIndex < teamIds.length; rivalIndex += 1) {
+      pairs.push([teamIds[index], teamIds[rivalIndex]]);
+    }
   }
 
   room.lastPairings = pairs;
@@ -421,22 +413,13 @@ export function resolveRound(room) {
     room.teams.map((team) => [team.id, majorityDecision(room, team.id)])
   );
 
+  room.teams.forEach((team) => {
+    if (teamDecisions[team.id] === "cooperate") team.stats.cooperate += 1;
+    else team.stats.betray += 1;
+  });
+
   const pairResults = room.currentRound.pairings.map(([teamAId, teamBId]) => {
     const teamA = room.teams.find((item) => item.id === teamAId);
-    if (!teamBId) {
-      return {
-        teamAId,
-        teamAName: teamA?.name,
-        teamBId: null,
-        teamBName: "Descansa",
-        decisionA: teamDecisions[teamAId],
-        decisionB: null,
-        deltaA: 0,
-        deltaB: 0,
-        winner: teamAId
-      };
-    }
-
     const teamB = room.teams.find((item) => item.id === teamBId);
     const decisionA = teamDecisions[teamAId];
     const decisionB = teamDecisions[teamBId];
@@ -446,10 +429,6 @@ export function resolveRound(room) {
 
     if (score.a > score.b && teamA) teamA.roundsWon += 1;
     if (score.b > score.a && teamB) teamB.roundsWon += 1;
-    if (decisionA === "cooperate") teamA.stats.cooperate += 1;
-    else teamA.stats.betray += 1;
-    if (decisionB === "cooperate") teamB.stats.cooperate += 1;
-    else teamB.stats.betray += 1;
 
     return {
       teamAId,
@@ -466,17 +445,22 @@ export function resolveRound(room) {
 
   room.players.forEach((player) => {
     const teamDecision = teamDecisions[player.teamId];
-    const pair = pairResults.find(
-      (result) => result.teamAId === player.teamId || result.teamBId === player.teamId
-    );
-    const rivalDecision =
-      pair?.teamAId === player.teamId ? pair?.decisionB : pair?.decisionA;
-    const coinsDelta = pair?.teamAId === player.teamId ? pair?.deltaA ?? 0 : pair?.deltaB ?? 0;
+    const matchups = pairResults
+      .filter((result) => result.teamAId === player.teamId || result.teamBId === player.teamId)
+      .map((pair) => ({
+        rivalTeamId: pair.teamAId === player.teamId ? pair.teamBId : pair.teamAId,
+        rivalTeamName: pair.teamAId === player.teamId ? pair.teamBName : pair.teamAName,
+        rivalDecision: pair.teamAId === player.teamId ? pair.decisionB : pair.decisionA,
+        coinsDelta: pair.teamAId === player.teamId ? pair.deltaA : pair.deltaB,
+        winner: pair.winner
+      }));
+    const coinsDelta = matchups.reduce((sum, matchup) => sum + matchup.coinsDelta, 0);
     player.history.unshift({
       round: room.roundNumber,
       vote: room.currentRound.votes[player.id] || null,
       teamDecision,
-      rivalDecision,
+      rivalDecision: matchups[0]?.rivalDecision || null,
+      matchups,
       coinsDelta
     });
     player.history = player.history.slice(0, 10);
