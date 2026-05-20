@@ -14,31 +14,31 @@ export const AVATARS = [
     skin: "#ffd0ad",
     accent: "#55d7ff",
     eye: "#18202b",
-    hat: "duck"
+    sprite: "duck"
   },
   {
     id: "jojo-segundo",
     name: "Jojo Segundo",
     skin: "#f5c4a5",
-    accent: "#ff4fd8",
+    accent: "#c9363f",
     eye: "#10131a",
-    hat: "jojo"
+    sprite: "jojo"
   },
   {
-    id: "neon-bot",
-    name: "Neon Bot",
-    skin: "#9dc4ff",
-    accent: "#c5ff5e",
-    eye: "#ffd447",
-    hat: "antenna"
+    id: "neon-valorant",
+    name: "Neon",
+    skin: "#8f6a56",
+    accent: "#16d6ff",
+    eye: "#0c1020",
+    sprite: "neon"
   },
   {
-    id: "pixel-punk",
-    name: "Pixel Punk",
-    skin: "#ffb3c7",
-    accent: "#7a5cff",
-    eye: "#54f7ff",
-    hat: "mohawk"
+    id: "rei-ayanami",
+    name: "Rei Ayanami",
+    skin: "#f8f7fb",
+    accent: "#d9ecff",
+    eye: "#d23139",
+    sprite: "rei"
   },
   {
     id: "byte-ghost",
@@ -46,7 +46,7 @@ export const AVATARS = [
     skin: "#d4d6ff",
     accent: "#54f7ff",
     eye: "#ff4fd8",
-    hat: "halo"
+    sprite: "halo"
   },
   {
     id: "arcade-ninja",
@@ -54,7 +54,55 @@ export const AVATARS = [
     skin: "#bfe686",
     accent: "#ff7a59",
     eye: "#111827",
-    hat: "bandana"
+    sprite: "bandana"
+  },
+  {
+    id: "eva-01",
+    name: "EVA 01",
+    skin: "#6d40c5",
+    accent: "#80ff72",
+    eye: "#54f7ff",
+    sprite: "eva"
+  },
+  {
+    id: "freddy-fnaf",
+    name: "Freddy",
+    skin: "#8f5a34",
+    accent: "#6a3f23",
+    eye: "#7d0f12",
+    sprite: "freddy"
+  },
+  {
+    id: "chica-fnaf",
+    name: "Chica",
+    skin: "#f2d35b",
+    accent: "#ff9f3f",
+    eye: "#47220d",
+    sprite: "chica"
+  },
+  {
+    id: "bonny-fnaf",
+    name: "Bonny",
+    skin: "#7b76c9",
+    accent: "#5f52c6",
+    eye: "#ff5b8a",
+    sprite: "bonny"
+  },
+  {
+    id: "alan-turing",
+    name: "Alan Turing",
+    skin: "#f2c8a6",
+    accent: "#6f8dbd",
+    eye: "#142033",
+    sprite: "turing"
+  },
+  {
+    id: "twilight-sparkle",
+    name: "Twilight Sparkle",
+    skin: "#b08cff",
+    accent: "#ff65c5",
+    eye: "#15132b",
+    sprite: "twilight"
   }
 ];
 

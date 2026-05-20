@@ -18,10 +18,16 @@ if (!backendUrl || !roomCode) {
 const avatars = [
   "duck-chief",
   "jojo-segundo",
-  "neon-bot",
-  "pixel-punk",
+  "neon-valorant",
+  "rei-ayanami",
   "byte-ghost",
-  "arcade-ninja"
+  "arcade-ninja",
+  "eva-01",
+  "freddy-fnaf",
+  "chica-fnaf",
+  "bonny-fnaf",
+  "alan-turing",
+  "twilight-sparkle"
 ];
 
 const names = [
